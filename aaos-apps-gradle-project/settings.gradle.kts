@@ -97,6 +97,7 @@ val projects =
         ":car-radio-app" to "../../Radio",
         ":test-media-app" to "../../tests/TestMediaApp",
         ":test-media-app:automotive" to "../../tests/TestMediaApp/automotive",
+        ":test-media-app:automotive-cal" to "../../tests/TestMediaApp/automotive-cal",
         ":test-media-app:common" to "../../tests/TestMediaApp/common",
         ":test-media-app:mobile" to "../../tests/TestMediaApp/mobile",
         ":test-rotary-ime" to "../../tests/RotaryIME",
