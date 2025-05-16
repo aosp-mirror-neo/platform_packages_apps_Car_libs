@@ -47,13 +47,12 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.function.Consumer
-import kotlin.math.max
 
 class AppCardHost
 internal constructor(
     c: Context,
-    updateRate: Int,
-    fastUpdateRate: Int,
+    private val updateRateMs: Int,
+    private val fastUpdateRateMs: Int,
     private val responseExecutor: Executor,
     private val timerProvider: AppCardTimerProvider,
     private val userProvider: UserProvider,
@@ -86,8 +85,6 @@ internal constructor(
     private val executorService = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool())
     private val packageManager: PackageManager
     private val contentResolver: ContentResolver
-    private val updateRateMs: Int
-    private val fastUpdateRateMs: Int
     private val brokerFactory: BrokerFactory
     private var context: Context
     private var currentUser = userProvider.getCurrentUser()
@@ -103,10 +100,6 @@ internal constructor(
 
         listeners = HashSet()
         idBrokerMap = ConcurrentHashMap()
-
-        updateRateMs = max(updateRate.toDouble(), MINIMUM_UPDATE_RATE_MS.toDouble()).toInt()
-        fastUpdateRateMs =
-            max(fastUpdateRate.toDouble(), MINIMUM_FAST_UPDATE_RATE_MS.toDouble()).toInt()
 
         val expectedBrokerPermission =
             context.resources.getString(com.android.car.appcard.R.string.host_permission)
@@ -1057,8 +1050,6 @@ internal constructor(
 
     companion object {
         private const val TAG = "AppCardHost"
-        private const val MINIMUM_UPDATE_RATE_MS = 5000
-        private const val MINIMUM_FAST_UPDATE_RATE_MS = 500
         private const val DATA_SCHEME_PACKAGE = "package"
 
         @Throws(AppCardHostException::class)
