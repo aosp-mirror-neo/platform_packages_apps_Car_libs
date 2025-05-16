@@ -15,14 +15,13 @@
 // MUST be a resource only library
 android_app {
     name: "token-shared-lib",
-
     min_sdk_version: "28",
     target_sdk_version: "current",
     sdk_version: "current",
     java_version: "11", // tm-car only supports up to java 11.
-
     aaptflags: ["--shared-lib"],
     manifest: "src/main/AndroidManifest.xml",
+    certificate: "platform",
     resource_dirs: [
         "src/main/res",
     ]
@@ -32,6 +31,7 @@ override_android_app {
     name: "oem-token-shared-lib",
     base: "token-shared-lib",
     package_name: "oem.demo.sharedlib",
+    certificate: "platform",
     rename_resources_package: false
 }
 
