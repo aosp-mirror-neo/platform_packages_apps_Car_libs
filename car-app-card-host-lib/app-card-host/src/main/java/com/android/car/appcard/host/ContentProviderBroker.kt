@@ -53,7 +53,11 @@ internal class ContentProviderBroker(
     override fun close() {
         contentResolver.unregisterContentObserver(appCardObserver)
         if (isAlive) {
-            sendMessageInternal(MSG_CLOSE_PROVIDER, bundle = null, errorId = null)
+            try {
+                sendMessageInternal(MSG_CLOSE_PROVIDER, bundle = null, errorId = null)
+            } catch (e: ContentProviderBrokerException) {
+                Log.e(TAG, e.message ?: "Exception thrown when trying to close provider")
+            }
         }
         contentProviderClient.close()
     }
@@ -188,9 +192,7 @@ internal class ContentProviderBroker(
             if (e is DeadObjectException) {
                 isAlive = false
             }
-            // TODO(b/391836448 ): Handle/Throw ContentProviderBrokerException without freezing
-            // Cluster.
-            Log.e(TAG, e.message ?: "sendMessageInternal failed with an exception")
+            throw ContentProviderBrokerException(msg, errorId, e)
         }
     }
 
