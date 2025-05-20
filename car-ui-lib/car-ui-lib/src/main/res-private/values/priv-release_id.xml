@@ -17,5 +17,5 @@
     <!-- This value should NOT be overlaid or changed by OEMs.
          It represents the approximate date when the code was pushed to AOSP.
     -->
-    <string name="com_android_car_ui_ub_release_id" translatable="false">2025-05-22</string>
+    <string name="com_android_car_ui_ub_release_id" translatable="false">2025-07-17</string>
 </resources>
