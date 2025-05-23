@@ -324,8 +324,10 @@ class DefaultScrollBar implements ScrollBar {
             new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    updatePaginationButtons();
-                    cacheChildrenHeight(recyclerView.getLayoutManager());
+                    if (dx != 0 || dy != 0) {
+                        updatePaginationButtons();
+                        cacheChildrenHeight(recyclerView.getLayoutManager());
+                    }
                 }
             };
 
