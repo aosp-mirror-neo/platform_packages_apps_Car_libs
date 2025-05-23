@@ -70,6 +70,8 @@ cp $GRADLE_OUTPUT_DIR/test-rotary-ime/outputs/apk/unbundled/release/test-rotary-
 check_status $?
 cp $GRADLE_OUTPUT_DIR/test-media-app/automotive/outputs/apk/unbundled/release/automotive-unbundled-release.apk $1/TestMediaApp.apk
 check_status $?
+cp $GRADLE_OUTPUT_DIR/test-media-app/automotive-cal/outputs/apk/unbundled/release/automotive-cal-unbundled-release.apk $1/TestMediaCalApp.apk
+check_status $?
 cp $GRADLE_OUTPUT_DIR/car-radio-app/outputs/apk/unbundled/release/car-radio-app-unbundled-release.apk $1/CarRadioApp.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformAosp/release/car-bugreport-app-platformAosp-release.apk $1/CarBugReportApp_aosp_cert.apk
