@@ -377,6 +377,14 @@ public final class CarUiRecyclerViewImpl extends FrameLayout
                     layoutStyle.getSpanCount(),
                     layoutStyle.getOrientation(),
                     layoutStyle.getReverseLayout()) {
+
+                @Override
+                public boolean supportsPredictiveItemAnimations() {
+                    // Letting the parent return true makes the RV auto-scroll when an item is
+                    // updated (eg with a new progress position).
+                    return false;
+                }
+
                 @Override
                 public void onLayoutCompleted(RecyclerView.State state) {
                     super.onLayoutCompleted(state);
