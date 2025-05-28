@@ -127,6 +127,8 @@ cp $GRADLE_OUTPUT_DIR/car-app-card-lib/outputs/aar/car-app-card-lib-release.aar 
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-app-card-host-lib/outputs/aar/car-app-card-host-lib-release.aar $1/car-app-card-host-lib.aar
 check_status $?
+cp "$GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/aar/car-rotary-lib-release.aar" "$1/car-rotary-lib.aar"
+check_status $?
 
 # Tests
 cp $GRADLE_OUTPUT_DIR/car-calendar-app/outputs/apk/androidTest/unbundled/debug/car-calendar-app-unbundled-debug-androidTest.apk $1/CarCalendarUnitTests.apk
