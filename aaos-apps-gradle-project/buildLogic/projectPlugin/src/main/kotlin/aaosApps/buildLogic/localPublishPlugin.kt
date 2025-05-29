@@ -21,7 +21,6 @@ import com.android.build.gradle.api.AndroidBasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 
 class localPublishPlugin : Plugin<Project> {
 
@@ -42,13 +41,6 @@ class localPublishPlugin : Plugin<Project> {
                             // We want the m2repo to be at the base of the build output.
                             project.rootProject.layout.buildDirectory.dir("../unbundled_m2repo")
                         )
-                }
-            }
-            publications {
-                it.register("release", MavenPublication::class.java) { pub ->
-                    pub.groupId = "com.android.car"
-                    pub.version = "UNBUNDLED"
-                    project.afterEvaluate { pub.from(project.components.getByName("release")) }
                 }
             }
         }

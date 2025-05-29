@@ -33,6 +33,29 @@ android {
         testApplicationId "com.android.car.rotary.test"
     }
 
+    sourceSets {
+        overlayable {
+            res.srcDirs += 'src/main/res-overlayable'
+        }
+    }
+    flavorDimensions "overlayable"
+    productFlavors {
+        overlayable {
+            dimension "overlayable"
+            isDefault true
+        }
+        noOverlayable {
+            dimension "overlayable"
+        }
+    }
+    libraryVariants.configureEach { variant ->
+        variant.outputs.all { output ->
+            if (variant.flavorName == "overlayable") {
+                output.outputFileName = "${project.name}-${variant.buildType.name}.aar"
+            }
+        }
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -43,12 +66,6 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled = true
-        }
-    }
-
-    project.gradle.taskGraph.whenReady {
-        connectedDebugAndroidTest {
-            ignoreFailures = true
         }
     }
 
