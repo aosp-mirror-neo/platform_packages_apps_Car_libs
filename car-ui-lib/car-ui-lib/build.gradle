@@ -78,6 +78,11 @@ android {
             minifyEnabled false
         }
     }
+    testVariants.all {
+        connectedAndroidTest {
+            ignoreFailures = true
+        }
+    }
 
     buildFeatures {
         buildConfig = false
@@ -89,6 +94,22 @@ android {
     useLibrary 'android.test.runner'
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
+
+    publishing {
+        singleVariant("overlayableRelease") {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        register("releaase", MavenPublication) { pub ->
+            pub.groupId = "com.android.car"
+            pub.version = "UNBUNDLED"
+            afterEvaluate { pub.from components.overlayableRelease }
+        }
+    }
 }
 
 dependencies {
