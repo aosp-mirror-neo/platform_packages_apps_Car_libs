@@ -72,7 +72,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         OnBackPressedDispatcherOwner {
 
     private static final double VISIBLE_SCREEN_PERCENTAGE = 0.9;
-    private static final int DIALOG_START_MARGIN_THRESHOLD = 64;
+    private static final int DIALOG_START_MARGIN_THRESHOLD = 120;
     private static final int DIALOG_MIN_PADDING = 32;
     private static final int IME_OVERLAP_DP = 32;
     private View mContent;
@@ -293,7 +293,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                 == Configuration.ORIENTATION_LANDSCAPE;
         int startMargin = (displayWidth - horizontalInset - params.width) / 2;
 
-        if (isLandscape && startMargin >= startMarginThresholdPx) {
+        if (isLandscape && startMargin > startMarginThresholdPx) {
             params.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
             params.x = startMarginThresholdPx;
         } else {
