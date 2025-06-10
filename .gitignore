@@ -29,3 +29,6 @@ read-snapshot.txt
 
 # MacOs
 .DS_Store
+
+# Gemini CLI
+.gemini
