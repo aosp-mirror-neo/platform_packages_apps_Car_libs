@@ -461,10 +461,16 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                             float imeOffset = mIsImeShownWithResize ? mImeOverlapPx
                                     * imeAnimation.getInterpolatedFraction()
                                     : -mImeOverlapPx * imeAnimation.getInterpolatedFraction();
-                            mContent.setPadding(mContent.getPaddingLeft(),
-                                    mContent.getPaddingTop(),
-                                    mContent.getPaddingRight(),
-                                    (int) (mContentBottomPadding + imeOffset));
+
+                            Object tag = mContent.getTag(R.id.car_ui_app_styled_content);
+                            boolean isOverlapPadded = tag == null ? false : (boolean) tag;
+                            if (!(isOverlapPadded && mIsImeShownWithResize)) {
+                                mContent.setPadding(mContent.getPaddingLeft(),
+                                        mContent.getPaddingTop(),
+                                        mContent.getPaddingRight(),
+                                        (int) (mContentBottomPadding + imeOffset));
+
+                            }
                         }
 
                         return insets;
@@ -484,6 +490,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         // If it is not, platform returned incorrect IME sizing (common issue
                         // when system bars are shown)
                         if (mIsImeShownWithResize) {
+                            mContent.setTag(R.id.car_ui_app_styled_content, true);
                             Rect r = new Rect();
                             Activity activity = CarUiUtils.getActivity(mContext);
                             if (activity != null) {
@@ -500,6 +507,8 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                                     window.setAttributes(window.getAttributes());
                                 }
                             }
+                        } else {
+                            mContent.setTag(R.id.car_ui_app_styled_content, false);
                         }
 
                         super.onEnd(animation);
@@ -613,12 +622,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         initViewTreeOwners();
         mContent = view;
         super.setContentView(view);
-    }
-
-    @Override
-    public void setContentView(int layoutResID) {
-        initViewTreeOwners();
-        super.setContentView(layoutResID);
     }
 
     @Override
