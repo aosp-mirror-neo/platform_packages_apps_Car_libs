@@ -231,18 +231,15 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     public WindowManager.LayoutParams getDialogWindowLayoutParam(
             WindowManager.LayoutParams params) {
         Rect windowBounds = getWindowBounds();
+        int windowWidth = windowBounds.width();
+        int windowHeight = windowBounds.height();
+        int horizontalInset = (int) getHorizontalInset();
+        int verticalInset = (int) getVerticalInset();
 
         int maxWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width_max);
         int maxHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height_max);
-
-        int windowWidth = windowBounds.width();
-        int windowHeight = windowBounds.height();
-
-        int horizontalInset = (int) getHorizontalInset();
-        int verticalInset = (int) getVerticalInset();
-
         int configuredWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width);
         int configuredHeight = mContext.getResources().getDimensionPixelSize(
@@ -251,6 +248,14 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
         params.height = configuredHeight != 0 ? configuredHeight
                 : Math.min(windowHeight, maxHeight);
+
+        if (configuredWidth > windowWidth) {
+            params.width = windowWidth;
+        }
+
+        if (configuredHeight > windowHeight) {
+            params.height = windowHeight;
+        }
 
         params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
                 R.dimen.car_ui_app_styled_dialog_dim_amount);
@@ -278,11 +283,15 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int posY = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_position_y);
 
+        if (posX + params.width > windowWidth || posY + params.height > windowHeight) {
+            posX = 0;
+            posY = 0;
+        }
+
         if (posX != 0 || posY != 0) {
             params.gravity = Gravity.TOP | Gravity.START;
             params.x = posX;
             params.y = posY;
-
             return params;
         } else {
             params.x = 0;
