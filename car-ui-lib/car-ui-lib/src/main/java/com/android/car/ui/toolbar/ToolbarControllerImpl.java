@@ -786,7 +786,7 @@ public final class ToolbarControllerImpl implements ToolbarController {
         carUiItem.setTitle(menuItem.getTitle());
         carUiItem.setOnItemClickedListener(item -> {
             menuItem.performClick();
-            mOverflowDialog.hide();
+            mOverflowDialog.dismiss();
         });
         return carUiItem;
     }
