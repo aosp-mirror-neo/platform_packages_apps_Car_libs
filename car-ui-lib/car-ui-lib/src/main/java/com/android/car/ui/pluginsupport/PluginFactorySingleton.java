@@ -250,6 +250,11 @@ public final class PluginFactorySingleton {
             Log.e(TAG, "Could not invoke getPluginFactory: ", e);
             sInstance = new PluginFactoryStub();
             return;
+        } catch (RuntimeException e) {
+            // This is a workaround for b/267486260.
+            Log.e(TAG, "Something went wrong when invoking getPluginFactory: ", e);
+            sInstance = new PluginFactoryStub();
+            return;
         }
 
         Log.i(TAG, "Loaded plugin " + pluginPackageName
