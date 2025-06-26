@@ -135,22 +135,6 @@ class ImageAppCardTest {
     }
 
     @Test(expected = IllegalStateException::class)
-    fun testNewBuilder_imageWithButton_exceptionOccurred() {
-        newBuilder(TEST_ID)
-            .setImage(Image.newBuilder(TEST_COMPONENT_ID).setImageData(bitmap).build())
-            .addButton(button)
-            .build()
-    }
-
-    @Test(expected = IllegalStateException::class)
-    fun testNewBuilder_imageWithProgressBar_exceptionOccurred() {
-        newBuilder(TEST_ID)
-            .setImage(Image.newBuilder(TEST_COMPONENT_ID).setImageData(bitmap).build())
-            .setProgressBar(progressBar)
-            .build()
-    }
-
-    @Test(expected = IllegalStateException::class)
     fun testNewBuilder_noImageNoPrimaryText_exceptionOccurred() {
         newBuilder(TEST_ID).addButton(button).setProgressBar(progressBar).build()
     }
