@@ -242,8 +242,12 @@ public class MediaSource {
      */
     @Nullable
     private static ComponentName getServiceFromExtras(MediaControllerCompat controller) {
-        if (controller.getExtras() == null || controller.getExtras()
-                .getString(Car.CAR_EXTRA_BROWSE_SERVICE_FOR_SESSION) == null) {
+        if (controller == null) {
+            Log.e(TAG, "getServiceFromExtras null controller");
+            return null;
+        }
+        Bundle extras = controller.getExtras();
+        if (extras == null || extras.getString(Car.CAR_EXTRA_BROWSE_SERVICE_FOR_SESSION) == null) {
             return null;
         }
         String serviceNameString =
