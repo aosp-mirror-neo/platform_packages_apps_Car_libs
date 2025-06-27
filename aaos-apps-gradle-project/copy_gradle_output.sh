@@ -42,6 +42,8 @@ check_status $?
 # Keep in sync with ./build.gradle
 ROOT_DIR=$(realpath "$SCRIPTS_DIR/../../../../../")
 JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk17/linux-x86"
+# Uncomment and DO_NOT_SUBMIT if testing on a mac
+#JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk17/darwin-arm64"
 GRADLE_OUTPUT_DIR="$ROOT_DIR/out/aaos-apps-gradle-build"
 
 # APKs
@@ -99,6 +101,8 @@ fi
 # AARs
 cp $GRADLE_OUTPUT_DIR/car-ui-lib/outputs/aar/car-ui-lib-release.aar $1/car-ui-lib.aar
 check_status $?
+cp $GRADLE_OUTPUT_DIR/car-ui-lib/outputs/aar/car-ui-lib-noOverlayable-release.aar $1/car-ui-lib-noOverlayable.aar
+check_status $?
 cp $GRADLE_OUTPUT_DIR/oem-apis/outputs/aar/oem-apis-release.aar $1/oem-apis.aar
 check_status $?
 cp $GRADLE_OUTPUT_DIR/oem-token-lib/outputs/aar/oem-token-lib-release.aar $1/oem-token-lib.aar
@@ -127,15 +131,21 @@ cp $GRADLE_OUTPUT_DIR/car-app-card-lib/outputs/aar/car-app-card-lib-release.aar 
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-app-card-host-lib/outputs/aar/car-app-card-host-lib-release.aar $1/car-app-card-host-lib.aar
 check_status $?
-cp "$GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/aar/car-rotary-lib-release.aar" "$1/car-rotary-lib.aar"
+cp $GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/aar/car-rotary-lib-release.aar $1/car-rotary-lib.aar
+check_status $?
+cp $GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/aar/car-rotary-lib-noOverlayable-release.aar $1/car-rotary-lib-noOverlayable.aar
 check_status $?
 
 # Tests
 cp $GRADLE_OUTPUT_DIR/car-calendar-app/outputs/apk/androidTest/unbundled/debug/car-calendar-app-unbundled-debug-androidTest.apk $1/CarCalendarUnitTests.apk
 check_status $?
-cp $GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/apk/androidTest/debug/car-rotary-lib-debug-androidTest.apk $1/CarRotaryLibUnitTests.apk
+cp $GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/apk/androidTest/overlayable/debug/car-rotary-lib-overlayable-debug-androidTest.apk $1/CarRotaryLibUnitTests.apk
 check_status $?
-cp $GRADLE_OUTPUT_DIR/car-ui-lib/outputs/apk/androidTest/debug/car-ui-lib-debug-androidTest.apk $1/CarUILibUnitTests.apk
+cp $GRADLE_OUTPUT_DIR/car-rotary-lib/outputs/apk/androidTest/noOverlayable/debug/car-rotary-lib-noOverlayable-debug-androidTest.apk $1/CarRotaryLibNoOverlayableUnitTests.apk
+check_status $?
+cp $GRADLE_OUTPUT_DIR/car-ui-lib/outputs/apk/androidTest/overlayable/debug/car-ui-lib-overlayable-debug-androidTest.apk $1/CarUILibUnitTests.apk
+check_status $?
+cp $GRADLE_OUTPUT_DIR/car-ui-lib/outputs/apk/androidTest/noOverlayable/debug/car-ui-lib-noOverlayable-debug-androidTest.apk $1/CarUILibNoOverlayableUnitTests.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-dialer-app/outputs/apk/emulator/debug/car-dialer-app-emulator-debug.apk $1/CarDialerAppForTesting.apk
 check_status $?
@@ -234,12 +244,12 @@ function export_jacoco() {
 export_jacoco car-calendar-app car-calendar-app unbundledDebug
 export_jacoco car-messenger-app car-messenger-app fakeDebug
 export_jacoco car-dialer-app car-dialer-app emulatorDebug
-export_jacoco car-caruilib-app car-ui-lib debug
+export_jacoco car-caruilib-app car-ui-lib overlayableDebug
 export_jacoco car-caruilib-testing-app car-ui-lib-testing debug
 export_jacoco oem-token-lib-app oem-token-lib debug
 export_jacoco car-uxr-client-lib-app car-uxr-client-lib debug
 export_jacoco car-assist-lib-app car-assist-lib debug
-export_jacoco car-rotarylib-app car-rotary-lib debug
+export_jacoco car-rotarylib-app car-rotary-lib overlayableDebug
 export_jacoco car-apps-common-app car-apps-common debug
 export_jacoco car-testing-common-app car-testing-common debug
 export_jacoco car-media-common-app car-media-common debug

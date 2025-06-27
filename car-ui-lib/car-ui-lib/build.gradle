@@ -38,11 +38,27 @@ android {
 
     sourceSets {
         main {
-            res.srcDirs = [
-                    'src/main/res',
-                    'src/main/res-overlayable',
-                    'src/main/res-private'
-            ]
+            res.srcDirs += 'src/main/res-private'
+        }
+        overlayable {
+            res.srcDirs += 'src/main/res-overlayable'
+        }
+    }
+    flavorDimensions "overlayable"
+    productFlavors {
+        overlayable {
+            dimension "overlayable"
+            isDefault true
+        }
+        noOverlayable {
+            dimension "overlayable"
+        }
+    }
+    libraryVariants.configureEach { variant ->
+        variant.outputs.all { output ->
+            if (variant.flavorName == "overlayable") {
+                output.outputFileName = "${project.name}-${variant.buildType.name}.aar"
+            }
         }
     }
 
@@ -62,9 +78,8 @@ android {
             minifyEnabled false
         }
     }
-
-    project.gradle.taskGraph.whenReady {
-        connectedDebugAndroidTest {
+    testVariants.all {
+        connectedAndroidTest {
             ignoreFailures = true
         }
     }
@@ -79,6 +94,22 @@ android {
     useLibrary 'android.test.runner'
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
+
+    publishing {
+        singleVariant("overlayableRelease") {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        register("releaase", MavenPublication) { pub ->
+            pub.groupId = "com.android.car"
+            pub.version = "UNBUNDLED"
+            afterEvaluate { pub.from components.overlayableRelease }
+        }
+    }
 }
 
 dependencies {

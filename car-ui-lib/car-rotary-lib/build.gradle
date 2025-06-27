@@ -33,6 +33,29 @@ android {
         testApplicationId "com.android.car.rotary.test"
     }
 
+    sourceSets {
+        overlayable {
+            res.srcDirs += 'src/main/res-overlayable'
+        }
+    }
+    flavorDimensions "overlayable"
+    productFlavors {
+        overlayable {
+            dimension "overlayable"
+            isDefault true
+        }
+        noOverlayable {
+            dimension "overlayable"
+        }
+    }
+    libraryVariants.configureEach { variant ->
+        variant.outputs.all { output ->
+            if (variant.flavorName == "overlayable") {
+                output.outputFileName = "${project.name}-${variant.buildType.name}.aar"
+            }
+        }
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -46,8 +69,8 @@ android {
         }
     }
 
-    project.gradle.taskGraph.whenReady {
-        connectedDebugAndroidTest {
+    testVariants.all {
+        connectedAndroidTest {
             ignoreFailures = true
         }
     }
@@ -64,6 +87,22 @@ android {
     useLibrary 'android.test.mock'
     namespace 'com.android.car.ui'
     testNamespace 'com.android.car.rotary.test'
+
+    publishing {
+        singleVariant("overlayableRelease") {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        register("releaase", MavenPublication) { pub ->
+            pub.groupId = "com.android.car"
+            pub.version = "UNBUNDLED"
+            afterEvaluate { pub.from components.overlayableRelease }
+        }
+    }
 }
 
 dependencies {
