@@ -88,6 +88,7 @@ internal class ContentProviderBroker(
                             )
                         )
                     } catch (e: IllegalArgumentException) {
+                        result.close()
                         throw ContentProviderBrokerException(msg, id = null, e)
                     }
 
@@ -95,6 +96,7 @@ internal class ContentProviderBroker(
                     ParcelableUtils.bytesToParcelable(blob, AppCardTransport.CREATOR)
                 appCardTransports.add(appCardTransport)
             } while (result.moveToNext())
+            result.close()
         }
 
         return appCardTransports
@@ -139,10 +141,12 @@ internal class ContentProviderBroker(
                         )
                     )
                 } catch (e: IllegalArgumentException) {
+                    result.close()
                     throw ContentProviderBrokerException(msg, errorId, e)
                 }
             appCardTransport = ParcelableUtils.bytesToParcelable(blob, AppCardTransport.CREATOR)
         }
+        result.close()
 
         appCardTransport
             ?: throw ContentProviderBrokerException(
