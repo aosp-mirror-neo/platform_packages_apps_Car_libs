@@ -74,11 +74,17 @@ public class FocusParkingView extends View {
 
     private static final String TAG = "FocusParkingView";
     private static final boolean DEBUG = false;
+    /** Feature used to represent Automotive Scalable UI targets */
+    private static final String FEATURE_CAR_SPLITSCREEN_MULTITASKING =
+            "android.software.car.splitscreen_multitasking";
 
     /** Interface used to dismiss a popup window. */
     public interface OnDismissPopupWindow {
         void onDismiss();
     }
+
+    private final boolean mIsAutomotiveScalableUI =
+            getContext().getPackageManager().hasSystemFeature(FEATURE_CAR_SPLITSCREEN_MULTITASKING);
 
     @Nullable
     private OnDismissPopupWindow mOnDismissPopupWindow;
@@ -225,8 +231,11 @@ public class FocusParkingView extends View {
         super.onAttachedToWindow();
         getViewTreeObserver().addOnGlobalFocusChangeListener(mFocusChangeListener);
         getViewTreeObserver().addOnTouchModeChangeListener(mTouchModeChangeListener);
-        // Disable restore focus behavior if this view is in a TaskView.
-        if (mShouldRestoreFocus && ViewUtils.isInMultiWindowMode(this)) {
+        if (mShouldRestoreFocus
+                // Disable restore focus behavior if this view is in a TaskView. See b/194407798.
+                // On ScalableUI builds, all acitivities are in multi-window mode, but it should
+                // restore focus. See b/427951014.
+                && ViewUtils.isInMultiWindowMode(this) && !mIsAutomotiveScalableUI) {
             mShouldRestoreFocus = false;
         }
     }
