@@ -24,9 +24,15 @@ setup_build_environment() {
     AOSP_JDK21="$ROOT_DIR/prebuilts/jdk/jdk21/${OS}-${ARCH}"
     JAVA_HOME="$AOSP_JDK21"
 
-    # Disable the build daemon
+    # Disable the build daemon, java auto-downloading and caching (no point when running in CI
     # Either set Gradle opts or prepend to it with a comma (separator) if it exists
-    GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.java.installations.auto-download=false ${GRADLE_OPTS:+,${GRADLE_OPTS}}"
+    GRADLE_OPTS="
+      -Dorg.gradle.daemon=false
+      -Dorg.gradle.java.installations.auto-detect=false
+      -Dorg.gradle.java.installations.auto-download=false
+      -Dorg.gradle.caching=false
+      -Dorg.gradle.configuration-cache=false
+      ${GRADLE_OPTS:+,${GRADLE_OPTS}}"
 
     # Export everything we need
     export ANDROID_HOME

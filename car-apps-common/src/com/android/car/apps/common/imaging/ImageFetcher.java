@@ -273,9 +273,8 @@ public class ImageFetcher {
                 } else if (!mPreventRemoteImages) {
                     return loadRemoteUri(context, imageUri, /* shouldTintDrawable= */ false);
                 }
-            } catch (IOException ioe) {
-                Log.e(TAG, "ImageLoadingTask#doInBackground: " + ioe);
-            } catch (CancellationException e) {
+            } catch (Exception e) {
+                Log.e(TAG, "ImageLoadingTask#doInBackground: " + e);
                 return null;
             }
             return null;

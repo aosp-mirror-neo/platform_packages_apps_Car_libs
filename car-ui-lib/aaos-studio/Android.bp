@@ -42,6 +42,8 @@ android_app {
         "androidx-constraintlayout_constraintlayout-solver",
     ],
 
+    required: ["allowed_privapp_com.android.aaos.studio"],
+
     platform_apis: true,
     min_sdk_version: "28",
     certificate: "platform",

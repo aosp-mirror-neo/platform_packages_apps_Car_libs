@@ -297,11 +297,7 @@ class ImageAppCard private constructor(builder: Builder) : AppCard(builder.id) {
                 "Secondary Text cannot be present without Primary Text"
             }
 
-            image?.let {
-                check(buttons.isEmpty()) { "Cannot have buttons and image simultaneously" }
-
-                check(progressBar == null) { "Cannot have progress bar and image simultaneously" }
-            }
+            image
                 ?: run {
                     check(primaryText != null) { "Primary Text must be present when image is null" }
 

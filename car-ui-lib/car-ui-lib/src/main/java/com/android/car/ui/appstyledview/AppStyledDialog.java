@@ -26,13 +26,13 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.OnBackPressedDispatcherOwner;
@@ -72,7 +72,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         OnBackPressedDispatcherOwner {
 
     private static final double VISIBLE_SCREEN_PERCENTAGE = 0.9;
-    private static final int DIALOG_START_MARGIN_THRESHOLD = 64;
+    private static final int DIALOG_START_MARGIN_THRESHOLD = 120;
     private static final int DIALOG_MIN_PADDING = 32;
     private static final int IME_OVERLAP_DP = 32;
     private View mContent;
@@ -148,7 +148,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     }
 
     @SuppressLint("NewApi")
-    private float getVerticalInset(DisplayMetrics displayMetrics) {
+    private float getVerticalInset() {
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
@@ -164,7 +164,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         }
 
         float fallbackInset =
-                (float) (displayMetrics.heightPixels * (1 - VISIBLE_SCREEN_PERCENTAGE));
+                (float) (getWindowBounds().height() * (1 - VISIBLE_SCREEN_PERCENTAGE));
         Activity activity = CarUiUtils.getActivity(mContext);
         if (activity == null) {
             return fallbackInset;
@@ -181,7 +181,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     }
 
     @SuppressLint("NewApi")
-    private float getHorizontalInset(DisplayMetrics displayMetrics) {
+    private float getHorizontalInset() {
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
@@ -196,7 +196,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         }
 
         float fallbackInset =
-                (float) (displayMetrics.widthPixels * (1 - VISIBLE_SCREEN_PERCENTAGE));
+                (float) (getWindowBounds().width() * (1 - VISIBLE_SCREEN_PERCENTAGE));
         Activity activity = CarUiUtils.getActivity(mContext);
         if (activity == null) {
             return fallbackInset;
@@ -212,32 +212,50 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         return insets.left + insets.right;
     }
 
+    private Rect getWindowBounds() {
+        WindowManager windowManager =
+                (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Rect bounds = new Rect();
+            windowManager.getDefaultDisplay().getRectSize(bounds);
+            return bounds;
+        }
+
+        WindowMetrics windowMetrics = windowManager.getCurrentWindowMetrics();
+        return windowMetrics.getBounds();
+    }
+
     /**
      * Returns the layout params for the AppStyledView dialog
      */
     public WindowManager.LayoutParams getDialogWindowLayoutParam(
             WindowManager.LayoutParams params) {
-        DisplayMetrics displayMetrics = CarUiUtils.getDeviceDisplayMetrics(mContext);
+        Rect windowBounds = getWindowBounds();
+        int windowWidth = windowBounds.width();
+        int windowHeight = windowBounds.height();
+        int horizontalInset = (int) getHorizontalInset();
+        int verticalInset = (int) getVerticalInset();
 
         int maxWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width_max);
         int maxHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height_max);
-
-        int displayWidth = displayMetrics.widthPixels;
-        int displayHeight = displayMetrics.heightPixels;
-
-        int horizontalInset = (int) getHorizontalInset(displayMetrics);
-        int verticalInset = (int) getVerticalInset(displayMetrics);
-
         int configuredWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width);
         int configuredHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height);
 
-        params.width = configuredWidth != 0 ? configuredWidth : Math.min(displayWidth, maxWidth);
+        params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
         params.height = configuredHeight != 0 ? configuredHeight
-                : Math.min(displayHeight, maxHeight);
+                : Math.min(windowHeight, maxHeight);
+
+        if (configuredWidth > windowWidth) {
+            params.width = windowWidth;
+        }
+
+        if (configuredHeight > windowHeight) {
+            params.height = windowHeight;
+        }
 
         params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
                 R.dimen.car_ui_app_styled_dialog_dim_amount);
@@ -265,11 +283,15 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int posY = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_position_y);
 
+        if (posX + params.width > windowWidth || posY + params.height > windowHeight) {
+            posX = 0;
+            posY = 0;
+        }
+
         if (posX != 0 || posY != 0) {
             params.gravity = Gravity.TOP | Gravity.START;
             params.x = posX;
             params.y = posY;
-
             return params;
         } else {
             params.x = 0;
@@ -279,21 +301,21 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int minPaddingPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
                 DIALOG_MIN_PADDING);
 
-        if (params.width + horizontalInset >= displayWidth - (minPaddingPx * 2)) {
-            params.width = displayWidth - horizontalInset - (minPaddingPx * 2);
+        if (params.width + horizontalInset >= windowWidth - (minPaddingPx * 2)) {
+            params.width = windowWidth - horizontalInset - (minPaddingPx * 2);
         }
 
-        if (params.height + verticalInset >= displayHeight - (minPaddingPx * 2)) {
-            params.height = displayHeight - verticalInset - (minPaddingPx * 2);
+        if (params.height + verticalInset >= windowHeight - (minPaddingPx * 2)) {
+            params.height = windowHeight - verticalInset - (minPaddingPx * 2);
         }
 
         int startMarginThresholdPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
                 DIALOG_START_MARGIN_THRESHOLD);
         boolean isLandscape = mContext.getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
-        int startMargin = (displayWidth - horizontalInset - params.width) / 2;
+        int startMargin = (windowWidth - horizontalInset - params.width) / 2;
 
-        if (isLandscape && startMargin >= startMarginThresholdPx) {
+        if (isLandscape && startMargin > startMarginThresholdPx) {
             params.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
             params.x = startMarginThresholdPx;
         } else {
@@ -428,10 +450,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         // Makes assumption that ime is shown on bottom of screen
                         int bottom = location[1] + mStartHeight;
 
-                        DisplayMetrics displayMetrics =
-                                CarUiUtils.getDeviceDisplayMetrics(mContext);
-
-                        int imeTop = displayMetrics.heightPixels - mImeHeight;
+                        int imeTop = getWindowBounds().height() - mImeHeight;
                         if (imeTop < bottom) {
                             resize = bottom - imeTop - mImeOverlapPx;
                         }
@@ -461,10 +480,16 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                             float imeOffset = mIsImeShownWithResize ? mImeOverlapPx
                                     * imeAnimation.getInterpolatedFraction()
                                     : -mImeOverlapPx * imeAnimation.getInterpolatedFraction();
-                            mContent.setPadding(mContent.getPaddingLeft(),
-                                    mContent.getPaddingTop(),
-                                    mContent.getPaddingRight(),
-                                    (int) (mContentBottomPadding + imeOffset));
+
+                            Object tag = mContent.getTag(R.id.car_ui_app_styled_content);
+                            boolean isOverlapPadded = tag == null ? false : (boolean) tag;
+                            if (!(isOverlapPadded && mIsImeShownWithResize)) {
+                                mContent.setPadding(mContent.getPaddingLeft(),
+                                        mContent.getPaddingTop(),
+                                        mContent.getPaddingRight(),
+                                        (int) (mContentBottomPadding + imeOffset));
+
+                            }
                         }
 
                         return insets;
@@ -484,6 +509,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         // If it is not, platform returned incorrect IME sizing (common issue
                         // when system bars are shown)
                         if (mIsImeShownWithResize) {
+                            mContent.setTag(R.id.car_ui_app_styled_content, true);
                             Rect r = new Rect();
                             Activity activity = CarUiUtils.getActivity(mContext);
                             if (activity != null) {
@@ -500,6 +526,8 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                                     window.setAttributes(window.getAttributes());
                                 }
                             }
+                        } else {
+                            mContent.setTag(R.id.car_ui_app_styled_content, false);
                         }
 
                         super.onEnd(animation);
@@ -613,12 +641,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         initViewTreeOwners();
         mContent = view;
         super.setContentView(view);
-    }
-
-    @Override
-    public void setContentView(int layoutResID) {
-        initViewTreeOwners();
-        super.setContentView(layoutResID);
     }
 
     @Override

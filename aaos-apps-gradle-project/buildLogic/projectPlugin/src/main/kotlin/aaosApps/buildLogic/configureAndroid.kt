@@ -27,6 +27,7 @@ import org.gradle.api.Project
 fun Project.configureCommonAndroid(buildCfgExt: AaosAppsBuildCfgExt) {
     // This block will trigger after an Android plugin is loaded
     extensions.getByType(com.android.build.api.dsl.CommonExtension::class.java).apply {
+        defaultConfig { missingDimensionStrategy("overlayable", "overlayable") }
         val ace = project.extensions.getByType(AndroidComponentsExtension::class.java)
 
         compileSdk = buildCfgExt.currentSdk.get()

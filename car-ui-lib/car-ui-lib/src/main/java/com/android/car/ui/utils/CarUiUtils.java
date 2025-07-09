@@ -533,14 +533,19 @@ public final class CarUiUtils {
             Object invoke = callback.invoke(am);
             return (SparseArray<String>) invoke;
         } catch (NoSuchMethodException e) {
-            // No rewriting to be done.
-            return new SparseArray<>();
+            cause = e;
+        } catch (SecurityException e) {
+            cause = e;
         } catch (IllegalAccessException e) {
             cause = e;
         } catch (InvocationTargetException e) {
-            cause = e.getCause();
+            cause = e;
+        } catch (Throwable t) {
+            // More context here (b/267486260)
+            cause = t;
         }
 
-        throw new RuntimeException("Failed to find R classes ", cause);
+        Log.e(TAG, "Failed to find R classes ", cause);
+        return new SparseArray<>();
     }
 }

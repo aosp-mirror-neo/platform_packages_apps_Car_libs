@@ -144,6 +144,12 @@ public final class PluginFactorySingleton {
             return;
         }
 
+        if (Build.VERSION.SDK_INT >= 36) {
+            Log.i(TAG, "CarUi plugin is not supported on Android platform version 16 or newer");
+            sInstance = new PluginFactoryStub();
+            return;
+        }
+
         boolean isPluginEnabled;
         switch (sTestingOverride) {
             case ENABLED:
@@ -242,6 +248,11 @@ public final class PluginFactorySingleton {
             }
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Could not invoke getPluginFactory: ", e);
+            sInstance = new PluginFactoryStub();
+            return;
+        } catch (RuntimeException e) {
+            // This is a workaround for b/267486260.
+            Log.e(TAG, "Something went wrong when invoking getPluginFactory: ", e);
             sInstance = new PluginFactoryStub();
             return;
         }
