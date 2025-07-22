@@ -30,7 +30,12 @@ class localPublishPlugin : Plugin<Project> {
 
         project.plugins.withType(AndroidBasePlugin::class.java) {
             project.extensions.getByType(LibraryExtension::class.java).publishing {
-                singleVariant("release") { withSourcesJar() }
+
+                // Bit hacky, but car-ui-lib needs to have its own publishing config and I don't
+                // want to duplicate the repository definition below.
+                if (project.name != "car-ui-lib" && project.name != "car-rotary-lib") {
+                    singleVariant("release") { withSourcesJar() }
+                }
             }
         }
         project.extensions.getByType(PublishingExtension::class.java).apply {
@@ -44,11 +49,13 @@ class localPublishPlugin : Plugin<Project> {
                         )
                 }
             }
-            publications {
-                it.register("release", MavenPublication::class.java) { pub ->
-                    pub.groupId = "com.android.car"
-                    pub.version = "UNBUNDLED"
-                    project.afterEvaluate { pub.from(project.components.getByName("release")) }
+            if (project.name != "car-ui-lib" && project.name != "car-rotary-lib") {
+                publications {
+                    it.register("release", MavenPublication::class.java) { pub ->
+                        pub.groupId = "com.android.car"
+                        pub.version = "UNBUNDLED"
+                        project.afterEvaluate { pub.from(project.components.getByName("release")) }
+                    }
                 }
             }
         }

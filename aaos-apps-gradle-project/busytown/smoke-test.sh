@@ -14,8 +14,8 @@ setup_build_environment
     :buildLogic:javaToolchains \
     :buildLogic:check \
     :car-ui-lib:assembleDebug \
-    :car-ui-lib:assembleDebugAndroidTest \
-    :car-ui-lib:testDebug \
+    :car-ui-lib:assembleOverlayableDebugAndroidTest \
+    :car-ui-lib:testOverlayableDebugUnitTest \
     :car-dashcam-service:assembleDebug
 
 # Functions defined in envsetup.sh

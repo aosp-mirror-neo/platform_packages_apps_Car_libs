@@ -67,12 +67,23 @@ fun oemColorScheme(oemContext: Context): ColorScheme {
     val oemColorOutlineVariant = Token.getColor(oemContext, R.attr.oemColorOutlineVariant)
     val oemColorScrim = Token.getColor(oemContext, R.attr.oemColorScrim)
     val oemColorSurfaceTint = Token.getColor(oemContext, R.attr.oemColorSurfaceTint)
+    val oemColorSurfaceDim = Token.getColor(oemContext, R.attr.oemColorSurfaceDim)
+    val oemColorSurfaceBright = Token.getColor(oemContext, R.attr.oemColorSurfaceBright)
+    val oemColorSurfaceContainer = Token.getColor(oemContext, R.attr.oemColorSurfaceContainer)
+    val oemColorSurfaceContainerHigh =
+        Token.getColor(oemContext, R.attr.oemColorSurfaceContainerHigh)
+    val oemColorSurfaceContainerHighest =
+        Token.getColor(oemContext, R.attr.oemColorSurfaceContainerHighest)
+    val oemColorSurfaceContainerLow = Token.getColor(oemContext, R.attr.oemColorSurfaceContainerLow)
+    val oemColorSurfaceContainerLowest =
+        Token.getColor(oemContext, R.attr.oemColorSurfaceContainerLowest)
 
     return ColorScheme(
         primary = Color(oemColorPrimary),
         onPrimary = Color(oemColorOnPrimary),
         primaryContainer = Color(oemColorPrimaryContainer),
         onPrimaryContainer = Color(oemColorOnPrimaryContainer),
+        inversePrimary = Color(oemColorPrimaryInverse),
         secondary = Color(oemColorSecondary),
         onSecondary = Color(oemColorOnSecondary),
         secondaryContainer = Color(oemColorSecondaryContainer),
@@ -81,23 +92,29 @@ fun oemColorScheme(oemContext: Context): ColorScheme {
         onTertiary = Color(oemColorOnTertiary),
         tertiaryContainer = Color(oemColorTertiaryContainer),
         onTertiaryContainer = Color(oemColorOnTertiaryContainer),
-        error = Color(oemColorError),
-        errorContainer = Color(oemColorErrorContainer),
-        onError = Color(oemColorOnError),
-        onErrorContainer = Color(oemColorOnErrorContainer),
         background = Color(oemColorBackground),
         onBackground = Color(oemColorOnBackground),
         surface = Color(oemColorSurface),
         onSurface = Color(oemColorOnSurface),
         surfaceVariant = Color(oemColorSurfaceVariant),
         onSurfaceVariant = Color(oemColorOnSurfaceVariant),
-        outline = Color(oemColorOutline),
+        surfaceTint = Color(oemColorSurfaceTint),
         inverseSurface = Color(oemColorSurfaceInverse),
         inverseOnSurface = Color(oemColorOnSurfaceInverse),
-        inversePrimary = Color(oemColorPrimaryInverse),
+        error = Color(oemColorError),
+        onError = Color(oemColorOnError),
+        errorContainer = Color(oemColorErrorContainer),
+        onErrorContainer = Color(oemColorOnErrorContainer),
+        outline = Color(oemColorOutline),
         outlineVariant = Color(oemColorOutlineVariant),
         scrim = Color(oemColorScrim),
-        surfaceTint = Color(oemColorSurfaceTint),
+        surfaceBright = Color(oemColorSurfaceBright),
+        surfaceDim = Color(oemColorSurfaceDim),
+        surfaceContainer = Color(oemColorSurfaceContainer),
+        surfaceContainerHigh = Color(oemColorSurfaceContainerHigh),
+        surfaceContainerHighest = Color(oemColorSurfaceContainerHighest),
+        surfaceContainerLow = Color(oemColorSurfaceContainerLow),
+        surfaceContainerLowest = Color(oemColorSurfaceContainerLowest),
     )
 }
 
