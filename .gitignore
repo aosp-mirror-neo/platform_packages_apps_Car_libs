@@ -31,4 +31,5 @@ read-snapshot.txt
 .DS_Store
 
 # Gemini CLI
-.gemini
+**/.gemini/logs.json
+**/.gemini/shell_history
