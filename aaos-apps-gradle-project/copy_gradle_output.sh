@@ -41,9 +41,9 @@ cd "$(dirname "$0")"
 check_status $?
 # Keep in sync with ./build.gradle
 ROOT_DIR=$(realpath "$SCRIPTS_DIR/../../../../../")
-JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk17/linux-x86"
+JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/linux-x86"
 # Uncomment and DO_NOT_SUBMIT if testing on a mac
-#JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk17/darwin-arm64"
+#JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/darwin-arm64"
 GRADLE_OUTPUT_DIR="$ROOT_DIR/out/aaos-apps-gradle-build"
 
 # APKs
