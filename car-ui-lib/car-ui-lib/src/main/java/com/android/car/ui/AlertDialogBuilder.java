@@ -77,13 +77,15 @@ import java.util.List;
  */
 public class AlertDialogBuilder {
 
-    private AlertDialog.Builder mBuilder;
+    private final AlertDialog.Builder mBuilder;
     private AlertDialog mDialog;
-    private Context mContext;
+    private final Context mContext;
     private boolean mPositiveButtonSet;
     private boolean mNeutralButtonSet;
     private boolean mNegativeButtonSet;
+    @Nullable
     private CharSequence mTitle;
+    @Nullable
     private CharSequence mSubtitle;
     private Drawable mIcon;
     private boolean mIconTinted;
@@ -105,9 +107,11 @@ public class AlertDialogBuilder {
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             if (VERSION.SDK_INT >= VERSION_CODES.R) {
                 Bundle bundle = new Bundle();
-                String titleString = mWideScreenTitle != null ? mWideScreenTitle
-                        : mTitle.toString();
-                bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, titleString);
+                if (mWideScreenTitle != null) {
+                    bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, mWideScreenTitle);
+                } else if (mTitle != null) {
+                    bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, mTitle.toString());
+                }
                 bundle.putString(ADD_DESC_TO_CONTENT_AREA, s.toString());
                 mInputMethodManager.sendAppPrivateCommand(mCarUiEditText, WIDE_SCREEN_ACTION,
                         bundle);
@@ -131,8 +135,11 @@ public class AlertDialogBuilder {
 
         if (insets.isVisible(ime())) {
             Bundle bundle = new Bundle();
-            String title = mWideScreenTitle != null ? mWideScreenTitle : mTitle.toString();
-            bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, title);
+            if (mWideScreenTitle != null) {
+                bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, mWideScreenTitle);
+            } else if (mTitle != null) {
+                bundle.putString(ADD_DESC_TITLE_TO_CONTENT_AREA, mTitle.toString());
+            }
             if (mWideScreenTitleDesc != null) {
                 bundle.putString(ADD_DESC_TO_CONTENT_AREA, mWideScreenTitleDesc);
             }

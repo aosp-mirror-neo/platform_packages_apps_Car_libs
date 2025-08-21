@@ -58,10 +58,19 @@ internal fun Project.configureJava(buildCfg: AaosAppsBuildCfgExt) {
     val systemStubs = buildCfg.repoRoot.file("prebuilts/sdk/$currentSdk/system/android.jar")
 
     project.plugins.withType(AndroidBasePlugin::class.java) {
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
+            task ->
+            // Add the stubs as the first library in the classpath
+            task.libraries.setFrom(project.files(systemStubs, task.libraries.files))
+        }
+        // JavaCompile uses a hard-set file collection, so we need to add the system stubs as part
+        // of the task
         tasks.withType(JavaCompile::class.java).configureEach { task ->
+            // Get a reference to the ObjectFactory at configuration time
             val objectFactory = project.objects
-
+            // Add the system stubs as a task input with a normalized path
             task.inputs.files(systemStubs).withNormalizer(CompileClasspathNormalizer::class.java)
+            // Now we can add the system stubs to the classpath
             task.doFirst {
                 task.classpath = objectFactory.fileCollection().from(systemStubs, task.classpath)
             }
