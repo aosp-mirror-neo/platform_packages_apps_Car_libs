@@ -36,7 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -219,7 +218,7 @@ public class Token {
             return tv.data;
         }
 
-        return ContextCompat.getColor(context, tv.resourceId);
+        return context.getColor(tv.resourceId);
     }
 
     private static HashMap<String, String> createTokenMap(@NonNull Context context) {
