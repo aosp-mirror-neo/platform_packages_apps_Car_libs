@@ -619,8 +619,8 @@ public class PlaybackViewModel {
             return mState.getExtras();
         }
 
-        @VisibleForTesting
-        PlaybackStateCompat getStateCompat() {
+        /** See {@link PlaybackStateCompat} */
+        public PlaybackStateCompat getStateCompat() {
             return mState;
         }
 
