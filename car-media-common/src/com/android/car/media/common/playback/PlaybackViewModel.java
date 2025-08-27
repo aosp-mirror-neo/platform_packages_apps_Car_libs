@@ -679,6 +679,17 @@ public class PlaybackViewModel {
             mMediaController = mediaController;
         }
 
+        /** Returns the {@link MediaControllerCompat.TransportControls} from the
+         * {@link MediaControllerCompat}
+         */
+        @Nullable public MediaControllerCompat.TransportControls getTransportControls() {
+            if (mMediaController != null) {
+                return mMediaController.getTransportControls();
+            } else {
+                return null;
+            }
+        }
+
         /**
          * Sends a 'play' command to the media source
          */
