@@ -24,7 +24,7 @@ plugins {
     alias(libs.plugins.ktfmt)
 }
 
-kotlin { jvmToolchain(17) }
+kotlin { jvmToolchain(21) }
 
 ktfmt { kotlinLangStyle() }
 

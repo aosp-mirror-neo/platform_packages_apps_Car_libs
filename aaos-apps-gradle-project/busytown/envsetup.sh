@@ -20,7 +20,6 @@ setup_build_environment() {
     echo "Setting ANDROID_HOME to $ANDROID_HOME"
 
     # Make the locations of the JDKs available to the build
-    AOSP_JDK17="$ROOT_DIR/prebuilts/jdk/jdk17/${OS}-${ARCH}"
     AOSP_JDK21="$ROOT_DIR/prebuilts/jdk/jdk21/${OS}-${ARCH}"
     JAVA_HOME="$AOSP_JDK21"
 
@@ -38,7 +37,6 @@ setup_build_environment() {
     export ANDROID_HOME
     export GRADLE_PROJ_DIR
     export GRADLE_OPTS
-    export AOSP_JDK17
     export AOSP_JDK21
     export JAVA_HOME
 
