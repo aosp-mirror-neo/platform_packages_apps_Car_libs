@@ -12,7 +12,7 @@ setup_build_environment
 # Adding the javaToolchains task to log the JDKs that the build can see
 ./gradlew \
     :buildLogic:javaToolchains \
-    testDebug
+    test
 
 # Functions defined in envsetup.sh
 wrap_up_build $?
