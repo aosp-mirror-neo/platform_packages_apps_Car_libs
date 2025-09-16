@@ -10,9 +10,7 @@ check_status() {
   if [[ $1 != 0 ]]
   then
     echo "check_status: non-zero exit code -> $1"
-    exit $1
-  else
-    echo "check_status: exit code $1 continue.."
+    exit "$1"
   fi
 }
 
@@ -37,25 +35,30 @@ else
   echo "$1 directory already there"
 fi
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit
 check_status $?
 # Keep in sync with ./build.gradle
 ROOT_DIR=$(realpath "$SCRIPTS_DIR/../../../../../")
 JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/linux-x86"
-# Uncomment and DO_NOT_SUBMIT if testing on a mac
-#JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/darwin-arm64"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/darwin-arm64"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  JAVA_HOME="$ROOT_DIR/prebuilts/jdk/jdk21/linux-x86"
+else
+  echo "Unsupported OS: $OSTYPE"
+  exit 1
+fi
+
 GRADLE_OUTPUT_DIR="$ROOT_DIR/out/aaos-apps-gradle-build"
 
 # APKs
 cp $GRADLE_OUTPUT_DIR/car-calendar-app/outputs/apk/unbundled/release/car-calendar-app-unbundled-release.apk $1/CarCalendarApp.apk
 check_status $?
-
-# b/395922162 - cannot build Dashcam on Buildbot
-# cp $GRADLE_OUTPUT_DIR/car-dashcam-app/outputs/apk/production/release/car-dashcam-app-production-release.apk $1/CarDashcamApp.apk
-# check_status $?
-# cp $GRADLE_OUTPUT_DIR/car-dashcam-service/outputs/apk/production/release/car-dashcam-service-production-release.apk $1/CarDashcamService.apk
-# check_status $?
-
+cp $GRADLE_OUTPUT_DIR/car-dashcam-app/outputs/apk/platformAosp/release/car-dashcam-app-platformAosp-release.apk $1/CarDashcamApp.apk
+check_status $?
+cp $GRADLE_OUTPUT_DIR/car-dashcam-service//outputs/apk/platformAosp/debug/car-dashcam-service-platformAosp-debug.apk $1/CarDashcamService.apk
+check_status $?
 cp $GRADLE_OUTPUT_DIR/car-dialer-app/outputs/apk/production/release/car-dialer-app-production-release.apk $1/CarDialerApp.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/platformAosp/release/car-media-app-platformAosp-release.apk $1/CarMediaApp_aosp_cert.apk
@@ -85,6 +88,10 @@ check_status $?
 
 if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/platformGoogle/release/car-media-app-platformGoogle-release.apk $1/CarMediaApp.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR//car-dashcam-app/outputs/apk/platformGoogle/release/car-dashcam-app-platformGoogle-release.apk $1/CarDashcamApp-google-cert.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR/car-dashcam-service/outputs/apk/platformGoogle/release/car-dashcam-service-platformGoogle-release.apk $1/CarDashcamService-google-cert.apk
   check_status $?
   cp $GRADLE_OUTPUT_DIR/car-app-card-sample-calendar-app/outputs/apk/platformGoogle/release/car-app-card-sample-calendar-app-platformGoogle-release.apk $1/car-app-card-sample-calendar-app-platform-release.apk
   check_status $?
@@ -184,48 +191,45 @@ if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
 fi
 
 # JaCoCo
-mkdir $GRADLE_OUTPUT_DIR/jacoco
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-calendar-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-calendar-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-messenger-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-messenger-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-media-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-media-app
 check_status $?
-
-# b/395922162 - cannot build Dashcam on Buildbot
-# mkdir $GRADLE_OUTPUT_DIR/jacoco/car-dashcam-app
-# check_status $?
-# mkdir $GRADLE_OUTPUT_DIR/jacoco/car-dashcam-service
-# check_status $?
-
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-dialer-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-dashcam-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-caruilib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-dashcam-service
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-caruilib-testing-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-dialer-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-uxr-client-lib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-caruilib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-assist-lib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-caruilib-testing-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-rotarylib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-uxr-client-lib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/oem-token-lib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-assist-lib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-apps-common-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-rotarylib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-testing-common-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/oem-token-lib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-media-common-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-apps-common-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-oem-token-lib-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-testing-common-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-telephony-common-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-media-common-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/car-messenger-common-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-oem-token-lib-app
 check_status $?
-mkdir $GRADLE_OUTPUT_DIR/jacoco/driverui-app
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-telephony-common-app
+check_status $?
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-messenger-common-app
+check_status $?
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/driverui-app
 check_status $?
 
 function export_jacoco() {
