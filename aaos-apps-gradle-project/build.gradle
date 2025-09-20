@@ -31,6 +31,8 @@ buildscript {
 
 plugins {
     id("aaosApps.buildLogic") apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.protobuf) apply false
     alias(libs.plugins.compose.compiler) apply false
 }
