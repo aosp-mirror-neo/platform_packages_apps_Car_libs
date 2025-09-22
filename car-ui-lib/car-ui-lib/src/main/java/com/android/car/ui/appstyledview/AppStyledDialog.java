@@ -398,14 +398,26 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         int x = location[0];
                         int y = location[1];
 
+                        Rect r = new Rect();
+                        int windowOffsetX = 0;
+                        int windowOffsetY = 0;
+                        Activity activity = CarUiUtils.getActivity(mContext);
+                        if (activity != null) {
+                            activity.getWindow().getDecorView().getRootView()
+                                    .getWindowVisibleDisplayFrame(r);
+                            windowOffsetX = r.left;
+                            windowOffsetY = r.top;
+                        }
+
                         mContentBottomPadding = mContent.getPaddingBottom();
 
                         mAnimationLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;
-                        mAnimationLayoutParams.setFitInsetsTypes(0);
+                        mAnimationLayoutParams.setFitInsetsTypes(
+                                WindowInsetsCompat.Type.systemBars());
                         mAnimationLayoutParams.layoutInDisplayCutoutMode =
                                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                        mAnimationLayoutParams.x = x;
-                        mAnimationLayoutParams.y = y;
+                        mAnimationLayoutParams.x = x - windowOffsetX;
+                        mAnimationLayoutParams.y = y - windowOffsetY;
                         window.setAttributes(mAnimationLayoutParams);
                     }
 
@@ -445,7 +457,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         // Makes assumption that ime is shown on bottom of screen
                         int bottom = location[1] + mStartHeight;
 
-                        int imeTop = getWindowBounds().height() - mImeHeight;
+                        int imeTop = getWindowBounds().bottom - mImeHeight;
                         if (imeTop < bottom) {
                             resize = bottom - imeTop - mImeOverlapPx;
                         }
