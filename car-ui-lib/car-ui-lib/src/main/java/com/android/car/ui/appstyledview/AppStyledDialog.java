@@ -236,13 +236,18 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int horizontalInset = (int) getHorizontalInset();
         int verticalInset = (int) getVerticalInset();
 
+        int maxWidth = mContext.getResources().getDimensionPixelSize(
+                R.dimen.car_ui_app_styled_dialog_width_max);
+        int maxHeight = mContext.getResources().getDimensionPixelSize(
+                R.dimen.car_ui_app_styled_dialog_height_max);
         int configuredWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width);
         int configuredHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height);
 
-        params.width = configuredWidth != 0 ? configuredWidth : windowWidth;
-        params.height = configuredHeight != 0 ? configuredHeight : windowHeight;
+        params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
+        params.height = configuredHeight != 0 ? configuredHeight
+                : Math.min(windowHeight, maxHeight);
 
         if (configuredWidth > windowWidth) {
             params.width = windowWidth;
