@@ -106,6 +106,7 @@ val projects =
         ":car-dashcam-service" to "../../Dashcam/dashcam-service",
         ":car-dashcam-manager" to "../../Dashcam/dashcam-manager",
         ":m3u8lib" to "../../Dashcam/m3u8lib",
+        ":car-control-center-app" to "../../MultiDisplay/ControlCenter",
     )
 
 // Initialize each Gradle subproject
