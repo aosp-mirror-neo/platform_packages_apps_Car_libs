@@ -398,27 +398,19 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         int x = location[0];
                         int y = location[1];
 
-                        Rect r = new Rect();
-                        int windowOffsetX = 0;
-                        int windowOffsetY = 0;
-                        Activity activity = CarUiUtils.getActivity(mContext);
-                        if (activity != null) {
-                            activity.getWindow().getDecorView().getRootView()
-                                    .getWindowVisibleDisplayFrame(r);
-                            windowOffsetX = r.left;
-                            windowOffsetY = r.top;
-                        }
-
-                        mContentBottomPadding = mContent.getPaddingBottom();
+                        Rect bounds = getWindowBounds();
+                        int windowOffsetX = bounds.left;
+                        int windowOffsetY = bounds.top;
 
                         mAnimationLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;
-                        mAnimationLayoutParams.setFitInsetsTypes(
-                                WindowInsetsCompat.Type.systemBars());
+                        mAnimationLayoutParams.setFitInsetsTypes(0);
                         mAnimationLayoutParams.layoutInDisplayCutoutMode =
                                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
                         mAnimationLayoutParams.x = x - windowOffsetX;
                         mAnimationLayoutParams.y = y - windowOffsetY;
                         window.setAttributes(mAnimationLayoutParams);
+
+                        mContentBottomPadding = mContent.getPaddingBottom();
                     }
 
                     @NonNull
