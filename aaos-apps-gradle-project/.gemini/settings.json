@@ -1,21 +1,23 @@
 {
-"fileFiltering": {
-  "respectGitIgnore": true,
-  "enableRecursiveFileSearch": true
-},
+  "context": {
+    "fileFiltering": {
+      "respectGitIgnore": true,
+      "enableRecursiveFileSearch": true
+    },
     "includeDirectories": [
-        "../../libs",
-        "../../BugReport",
-        "../../Calendar",
-        "../../Dashcam",
-        "../../Dialer",
-        "../../DriverUI",
-        "../../Media",
-        "../../Messenger",
-        "../../MultiDisplay",
-        "../../Radio",
-        "../../SensitiveAppLock",
-        "../../tests"
+      "../../libs",
+      "../../BugReport",
+      "../../Calendar",
+      "../../Dashcam",
+      "../../Dialer",
+      "../../DriverUI",
+      "../../Media",
+      "../../Messenger",
+      "../../MultiDisplay",
+      "../../Radio",
+      "../../SensitiveAppLock",
+      "../../tests"
     ],
-    "loadMemoryFromIncludeDirectories":true
+    "loadFromIncludeDirectories": true
+  }
 }
