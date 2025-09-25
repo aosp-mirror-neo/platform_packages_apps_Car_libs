@@ -15,8 +15,8 @@
 -->
 <resources>
     <!-- app styled view max height and width -->
-    <dimen name="car_ui_app_styled_dialog_width_max">1280dp</dimen>
-    <dimen name="car_ui_app_styled_dialog_height_max">960dp</dimen>
+    <dimen name="car_ui_app_styled_dialog_width_max">1600dp</dimen>
+    <dimen name="car_ui_app_styled_dialog_height_max">800dp</dimen>
 
     <!-- Footer Preference icon size   -->
     <dimen name="car_ui_footer_icon_size">36dp</dimen>
