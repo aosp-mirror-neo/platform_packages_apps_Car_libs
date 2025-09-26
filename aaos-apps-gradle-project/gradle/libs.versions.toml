@@ -8,10 +8,12 @@ androidx-appcompat = "1.7.0"
 androidx-cardview = "1.0.0"
 androidx-constraintlayout = "2.2.1"
 androidx-core = "1.16.0-rc01"
+androidx-fragment = "1.8.6"
 androidx-hiltCompiler = "1.2.0"
 androidx-hiltLifecycleViewmodel = "1.0.0-alpha03"
 androidx-junit = "1.2.1"
 androidx-lifecycle = "2.9.0-alpha13"
+androidx-lifecycle-extensions = "2.2.0"
 androidx-recyclerview = "1.4.0"
 androidx-test = "1.6.1"
 asynclayoutinflater = "1.0.0"
@@ -36,6 +38,7 @@ hilt = "2.51.1"
 interpolator = "1.0.0"
 junit = "4.13.2"
 kotlin = "2.1.10"
+kotlinxCoroutines= "1.10.1"
 ksp = "2.1.10-1.0.30"
 ktfmt = "0.22.0"
 leakcanaryAndroid = "2.8.1"
@@ -67,6 +70,7 @@ android-car-ui-lib = { module = "com.android.car.ui:car-ui-lib", version.ref = "
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref ="androidx-activity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-asynclayoutinflater = { module = "androidx.asynclayoutinflater:asynclayoutinflater", version.ref = "asynclayoutinflater" }
 androidx-car-app-projected = { module = "androidx.car.app:app-projected", version.ref = "carAppLib" }
@@ -81,18 +85,22 @@ androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", versi
 androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espressoCore" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoCore" }
+androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidx-fragment" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidx-hiltCompiler" }
 androidx-hilt-lifecycle-viewmodel = { module = "androidx.hilt:hilt-lifecycle-viewmodel", version.ref = "androidx-hiltLifecycleViewmodel" }
 androidx-interpolator = { module = "androidx.interpolator:interpolator", version.ref = "interpolator" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
 androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-common-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref =  "androidx-lifecycle-extensions" }
 androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-livedata-core = { group = "androidx.lifecycle", name = "lifecycle-livedata-core", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-android = { module = "androidx.lifecycle:lifecycle-runtime-android", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-android = { module = "androidx.lifecycle:lifecycle-viewmodel-android", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-material-icons-extended-android = { module = "androidx.compose.material:material-icons-extended-android"}
 androidx-media = { module = "androidx.media:media", version.ref = "media" }
@@ -141,6 +149,9 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ktfmt-gradlePlugin = { module = "com.ncorti.ktfmt.gradle:com.ncorti.ktfmt.gradle.gradle.plugin", version.ref = "ktfmt" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
@@ -167,6 +178,7 @@ androidApplication = { id = "com.android.application", version.ref = "androidGra
 androidLibrary = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 designcompose = { id = "com.android.designcompose", version.ref = "designcompose" }
+hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
