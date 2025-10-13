@@ -27,9 +27,7 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.webkit.WebView;
-
 import androidx.annotation.NonNull;
-
 import java.util.List;
 
 /**
@@ -41,7 +39,6 @@ import java.util.List;
  */
 @TargetApi(Build.VERSION_CODES.R)
 class RotaryScrollNodeProvider extends AccessibilityNodeProvider {
-
     /**
      * The {@link WebView} that represents the host {@link AccessibilityNodeInfo}. This is ideally
      * a {@link RotaryScrollWebView}.
@@ -73,7 +70,7 @@ class RotaryScrollNodeProvider extends AccessibilityNodeProvider {
         if (node == null) {
             return null;
         }
-        if (node.getClassName() == WebView.class.getName()) {
+        if (TextUtils.equals(node.getClassName(), WebView.class.getName())) {
             enableRotaryScrolling(node, virtualViewId);
         }
         return node;
