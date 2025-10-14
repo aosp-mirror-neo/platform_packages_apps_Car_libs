@@ -253,6 +253,7 @@ public class Token {
         return createTokenMap(context).hashCode();
     }
 
+    @SuppressWarnings("DefaultLocale")
     private static String getAttributeValue(Context context, TypedValue value) {
         int valueType = value.type;
 
@@ -272,6 +273,7 @@ public class Token {
                     TypedValue typedColor = new TypedValue();
                     array.getValue(1, typedColor);
                     String color = typedColor.coerceToString().toString();
+                    array.recycle();
 
                     return String.format("Text size: %f Text color %s", size, color);
                 } catch (Exception e) {
