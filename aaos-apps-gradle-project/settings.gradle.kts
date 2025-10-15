@@ -94,6 +94,7 @@ val projects =
         ":car-messenger-app" to "../../Messenger",
         ":car-messenger-app:testing" to "../../Messenger/testing",
         ":car-radio-app" to "../../Radio",
+        ":car-sensitiveapplock-app" to "../../SensitiveAppLock",
         ":test-media-app" to "../../tests/TestMediaApp",
         ":test-media-app:automotive" to "../../tests/TestMediaApp/automotive",
         ":test-media-app:automotive-cal" to "../../tests/TestMediaApp/automotive-cal",
