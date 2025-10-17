@@ -137,7 +137,13 @@ public class CarUiInstaller extends ContentProvider {
                         // Use reflection to resolve attribute ID to be compatible with
                         // dynamically loaded GMSCore modules
                         int attrId = activity.getResources().getIdentifier("carUiActivity", "attr",
-                                CarUiUtils.getAppPackageName(activity));
+                                activity.getPackageName());
+
+                        // Workaround for packages with a package name override:
+                        if (attrId == 0) {
+                            attrId = activity.getResources().getIdentifier("carUiActivity", "attr",
+                                    CarUiUtils.getAppPackageName(activity));
+                        }
 
                         return CarUiUtils.getThemeBoolean(activity, attrId);
                     }
