@@ -86,6 +86,22 @@ public class Token {
     }
 
     /**
+     * Return {@code true} if there is an OEM design token shared library installed on device.
+     */
+    public static boolean isTokenSharedLibInstalled(@NonNull PackageManager packageManager) {
+        String packageName = getTokenSharedLibPackageName(packageManager);
+        if (packageName == null) {
+            return false;
+        }
+
+        try {
+            return packageManager.getApplicationInfo(packageName, 0).enabled;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
      * Return a {@link ContextThemeWrapper} that includes OEM provided values for design tokens.
      * <p>
      * If OEM customized token values are unavailable on the system , the {@code Context} object is
