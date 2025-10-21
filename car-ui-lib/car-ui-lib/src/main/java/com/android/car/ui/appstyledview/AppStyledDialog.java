@@ -236,13 +236,18 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int horizontalInset = (int) getHorizontalInset();
         int verticalInset = (int) getVerticalInset();
 
+        int maxWidth = mContext.getResources().getDimensionPixelSize(
+                R.dimen.car_ui_app_styled_dialog_width_max);
+        int maxHeight = mContext.getResources().getDimensionPixelSize(
+                R.dimen.car_ui_app_styled_dialog_height_max);
         int configuredWidth = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_width);
         int configuredHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height);
 
-        params.width = configuredWidth != 0 ? configuredWidth : windowWidth;
-        params.height = configuredHeight != 0 ? configuredHeight : windowHeight;
+        params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
+        params.height = configuredHeight != 0 ? configuredHeight
+                : Math.min(windowHeight, maxHeight);
 
         if (configuredWidth > windowWidth) {
             params.width = windowWidth;
@@ -398,15 +403,19 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         int x = location[0];
                         int y = location[1];
 
-                        mContentBottomPadding = mContent.getPaddingBottom();
+                        Rect bounds = getWindowBounds();
+                        int windowOffsetX = bounds.left;
+                        int windowOffsetY = bounds.top;
 
                         mAnimationLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;
                         mAnimationLayoutParams.setFitInsetsTypes(0);
                         mAnimationLayoutParams.layoutInDisplayCutoutMode =
                                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                        mAnimationLayoutParams.x = x;
-                        mAnimationLayoutParams.y = y;
+                        mAnimationLayoutParams.x = x - windowOffsetX;
+                        mAnimationLayoutParams.y = y - windowOffsetY;
                         window.setAttributes(mAnimationLayoutParams);
+
+                        mContentBottomPadding = mContent.getPaddingBottom();
                     }
 
                     @NonNull
@@ -445,7 +454,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                         // Makes assumption that ime is shown on bottom of screen
                         int bottom = location[1] + mStartHeight;
 
-                        int imeTop = getWindowBounds().height() - mImeHeight;
+                        int imeTop = getWindowBounds().bottom - mImeHeight;
                         if (imeTop < bottom) {
                             resize = bottom - imeTop - mImeOverlapPx;
                         }

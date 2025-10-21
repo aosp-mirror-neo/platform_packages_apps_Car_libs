@@ -619,8 +619,8 @@ public class PlaybackViewModel {
             return mState.getExtras();
         }
 
-        @VisibleForTesting
-        PlaybackStateCompat getStateCompat() {
+        /** See {@link PlaybackStateCompat} */
+        public PlaybackStateCompat getStateCompat() {
             return mState;
         }
 
@@ -677,6 +677,17 @@ public class PlaybackViewModel {
 
         private PlaybackController(@Nullable MediaControllerCompat mediaController) {
             mMediaController = mediaController;
+        }
+
+        /** Returns the {@link MediaControllerCompat.TransportControls} from the
+         * {@link MediaControllerCompat}
+         */
+        @Nullable public MediaControllerCompat.TransportControls getTransportControls() {
+            if (mMediaController != null) {
+                return mMediaController.getTransportControls();
+            } else {
+                return null;
+            }
         }
 
         /**

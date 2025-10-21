@@ -20,6 +20,7 @@ import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.api.AndroidBasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 
 class ProjectPlugin : Plugin<Project> {
@@ -46,5 +47,10 @@ class ProjectPlugin : Plugin<Project> {
             project.configureCommonAndroid(extension)
         }
         project.plugins.withType(AppPlugin::class.java) { project.configureAndroidApp(extension) }
+
+        // Disable the new Gradle 9.0 default that fails the build if a module
+        // has test sources but no tests are found. This allows modules
+        // with no unit tests (e.g., simple libraries) to build successfully.
+        project.tasks.withType(Test::class.java) { it.failOnNoDiscoveredTests.set(false) }
     }
 }

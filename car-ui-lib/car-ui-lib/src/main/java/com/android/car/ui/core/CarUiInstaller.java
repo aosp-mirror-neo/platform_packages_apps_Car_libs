@@ -16,6 +16,7 @@
 package com.android.car.ui.core;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
@@ -27,6 +28,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.util.Log;
@@ -63,6 +65,8 @@ import java.util.HashSet;
  */
 // TODO: (b/200322953)
 @SuppressLint("LogConditional")
+@SuppressWarnings("UseRequiresApi")
+@TargetApi(Build.VERSION_CODES.R)
 public class CarUiInstaller extends ContentProvider {
 
     private static final String TAG = "CarUiInstaller";
@@ -137,7 +141,13 @@ public class CarUiInstaller extends ContentProvider {
                         // Use reflection to resolve attribute ID to be compatible with
                         // dynamically loaded GMSCore modules
                         int attrId = activity.getResources().getIdentifier("carUiActivity", "attr",
-                                CarUiUtils.getAppPackageName(activity));
+                                activity.getPackageName());
+
+                        // Workaround for packages with a package name override:
+                        if (attrId == 0) {
+                            attrId = activity.getResources().getIdentifier("carUiActivity", "attr",
+                                    CarUiUtils.getAppPackageName(activity));
+                        }
 
                         return CarUiUtils.getThemeBoolean(activity, attrId);
                     }

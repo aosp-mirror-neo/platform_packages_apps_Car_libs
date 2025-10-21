@@ -29,8 +29,7 @@ android_library {
         "token-shared-lib",
     ],
     static_libs: [
-        "androidx.annotation_annotation",
-        "androidx.appcompat_appcompat",
+        "androidx.annotation_annotation"
     ],
 }
 
