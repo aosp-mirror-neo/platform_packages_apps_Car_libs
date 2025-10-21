@@ -30,7 +30,7 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/") }
+        maven { url = uri(System.getenv("MAVEN_CENTRAL_URL")) }
         gradlePluginPortal()
     }
 }
@@ -49,7 +49,7 @@ dependencyResolutionManagement {
             }
         }
         gradlePluginPortal()
-        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/") }
+        maven { url = uri(System.getenv("MAVEN_CENTRAL_URL")) }
     }
 }
 
