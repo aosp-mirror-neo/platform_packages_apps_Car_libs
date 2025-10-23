@@ -27,6 +27,7 @@ import android.os.Looper;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -138,7 +139,6 @@ class DefaultScrollBar implements ScrollBar {
         fastScroller.enable();
 
         getRecyclerView().addOnScrollListener(mRecyclerViewOnScrollListener);
-
         mScrollView.setVisibility(View.GONE);
         mScrollView.addOnLayoutChangeListener(
                 (View v,
@@ -151,9 +151,25 @@ class DefaultScrollBar implements ScrollBar {
                         int oldRight,
                         int oldBottom) -> mHandler.post(this::updatePaginationButtons));
 
-        if (mRecyclerView.getAdapter() != null) {
-            adapterChanged(mRecyclerView.getAdapter());
-        }
+        mRecyclerView
+                .getViewTreeObserver()
+                .addOnGlobalLayoutListener(
+                        new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                // At this point the layout is complete and the
+                                // dimensions of recyclerView and any child views
+                                // are known.
+                                if (mRecyclerView.getAdapter() != null) {
+                                    adapterChanged(mRecyclerView.getAdapter());
+                                }
+
+                                mRecyclerView
+                                        .getViewTreeObserver()
+                                        .removeOnGlobalLayoutListener(this);
+                            }
+                        });
+
     }
 
     public RecyclerView getRecyclerView() {
@@ -185,6 +201,8 @@ class DefaultScrollBar implements ScrollBar {
         try {
             if (adapter != null) {
                 adapter.registerAdapterDataObserver(mAdapterChangeObserver);
+                updatePaginationButtons();
+                cacheChildrenHeight(mRecyclerView.getLayoutManager());
             }
         } catch (IllegalStateException e) {
             // adapter is already registered. and we're trying to register again. ignore.
