@@ -85,6 +85,8 @@ cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/default/release/driver-ui-default-re
 check_status $?
 cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/platformAosp/release/driver-ui-platformAosp-release.apk $1/driver-ui-platform-release.apk
 check_status $?
+cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/platformAosp/release/car-sensitiveapplock-app-platformAosp-release.apk $1/SensitiveAppLock_aosp_cert.apk
+check_status $?
 
 if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/platformGoogle/release/car-media-app-platformGoogle-release.apk $1/CarMediaApp.apk
@@ -102,6 +104,8 @@ if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-app-card-host-sample-app/outputs/apk/platformGoogle/release/car-app-card-host-sample-app-platformGoogle-release.apk $1/car-app-card-host-sample-app-platform-release.apk
   check_status $?
   cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformGoogle/release/car-bugreport-app-platformGoogle-release.apk $1/CarBugReportApp.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/platformGoogle/release/car-sensitiveapplock-app-platformGoogle-release.apk $1/SensitiveAppLock.apk
   check_status $?
 fi
 
@@ -182,11 +186,15 @@ cp $GRADLE_OUTPUT_DIR/car-app-card-host-lib/outputs/apk/androidTest/debug/car-ap
 check_status $?
 cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/androidTest/default/debug/driver-ui-default-debug-androidTest.apk $1/DriverUITests.apk
 check_status $?
+cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/androidTest/platformAosp/debug/car-sensitiveapplock-app-platformAosp-debug-androidTest.apk $1/SensitiveAppLockUnitTests_aosp_cert.apk
+check_status $?
 
 if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/androidTest/platformGoogle/debug/car-media-app-platformGoogle-debug-androidTest.apk  $1/CarMediaUnitTests.apk
   check_status $?
   cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/androidTest/platformGoogle/debug/car-bugreport-app-platformGoogle-debug-androidTest.apk $1/CarBugReportUnitTests.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/androidTest/platformGoogle/debug/car-sensitiveapplock-app-platformGoogle-debug-androidTest.apk $1/SensitiveAppLockUnitTests.apk
   check_status $?
 fi
 
@@ -231,6 +239,8 @@ mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-messenger-common-app
 check_status $?
 mkdir -p $GRADLE_OUTPUT_DIR/jacoco/driverui-app
 check_status $?
+mkdir -p $GRADLE_OUTPUT_DIR/jacoco/car-sensitiveapplock-app
+check_status $?
 
 function export_jacoco() {
   local output_dir=$1
@@ -261,9 +271,11 @@ export_jacoco car-oem-token-lib-app oem-token-lib debug
 export_jacoco car-telephony-common-app car-telephony-common debug
 export_jacoco car-messenger-common-app car-messenger-common debug
 export_jacoco driverui-app driver-ui defaultDebug
+export_jacoco car-sensitiveapplock-app car-sensitiveapplock-app platformAospDebug
 
 if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   export_jacoco car-media-app car-media-app platformGoogleDebug
+  export_jacoco car-sensitiveapplock-app car-sensitiveapplock-app platformGoogleDebug
 fi
 
 $JAVA_HOME/bin/jar cvfM $1/jacoco-report-classes-all.jar -C $GRADLE_OUTPUT_DIR/jacoco .
