@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Sampul Album"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Tanpa Judul"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Buka %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Terjadi error. Coba nanti."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"Terjadi error. Coba nanti."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Tidak dapat melakukannya saat ini"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Aplikasi ini tidak dapat melakukannya"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Login untuk menggunakan aplikasi ini"</string>

@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Albumin kansitaide"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Ei nimeä"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Avaa %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Jotain meni pieleen. Yritä myöhemmin."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"Jotain meni pieleen. Yritä myöhemmin."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Tämä ei juuri nyt onnistu"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Sovellus ei tue pyyntöä"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Kirjaudu sisään käyttääksesi tätä sovellusta"</string>
