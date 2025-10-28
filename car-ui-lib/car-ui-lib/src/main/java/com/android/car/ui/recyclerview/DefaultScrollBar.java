@@ -27,7 +27,6 @@ import android.os.Looper;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -59,26 +58,31 @@ class DefaultScrollBar implements ScrollBar {
                     clearCachedHeights();
                     updatePaginationButtons();
                 }
+
                 @Override
                 public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
                     clearCachedHeights();
                     updatePaginationButtons();
                 }
+
                 @Override
                 public void onItemRangeChanged(int positionStart, int itemCount) {
                     clearCachedHeights();
                     updatePaginationButtons();
                 }
+
                 @Override
                 public void onItemRangeInserted(int positionStart, int itemCount) {
                     clearCachedHeights();
                     updatePaginationButtons();
                 }
+
                 @Override
                 public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
                     clearCachedHeights();
                     updatePaginationButtons();
                 }
+
                 @Override
                 public void onItemRangeRemoved(int positionStart, int itemCount) {
                     clearCachedHeights();
@@ -99,6 +103,7 @@ class DefaultScrollBar implements ScrollBar {
     private OrientationHelper mOrientationHelper;
     private OnContinuousScrollListener mPageUpOnContinuousScrollListener;
     private OnContinuousScrollListener mPageDownOnContinuousScrollListener;
+    private RecyclerView.Adapter mAdapter;
 
     @Override
     public void initialize(Context context, RecyclerView rv, View scrollView) {
@@ -142,34 +147,36 @@ class DefaultScrollBar implements ScrollBar {
         mScrollView.setVisibility(View.GONE);
         mScrollView.addOnLayoutChangeListener(
                 (View v,
-                        int left,
-                        int top,
-                        int right,
-                        int bottom,
-                        int oldLeft,
-                        int oldTop,
-                        int oldRight,
-                        int oldBottom) -> mHandler.post(this::updatePaginationButtons));
+                 int left,
+                 int top,
+                 int right,
+                 int bottom,
+                 int oldLeft,
+                 int oldTop,
+                 int oldRight,
+                 int oldBottom) -> mHandler.post(this::updatePaginationButtons));
 
-        mRecyclerView
-                .getViewTreeObserver()
-                .addOnGlobalLayoutListener(
-                        new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                // At this point the layout is complete and the
-                                // dimensions of recyclerView and any child views
-                                // are known.
-                                if (mRecyclerView.getAdapter() != null) {
-                                    adapterChanged(mRecyclerView.getAdapter());
-                                }
+        mAdapter = mRecyclerView.getAdapter();
+        if (mAdapter != null) {
+            adapterChanged(mRecyclerView.getAdapter());
+        }
 
-                                mRecyclerView
-                                        .getViewTreeObserver()
-                                        .removeOnGlobalLayoutListener(this);
-                            }
-                        });
+        mRecyclerView.addOnChildAttachStateChangeListener(
+                new RecyclerView.OnChildAttachStateChangeListener() {
+                    @Override
+                    public void onChildViewAttachedToWindow(@NonNull View view) {
+                        if (mAdapter != mRecyclerView.getAdapter()) {
+                            mAdapter = mRecyclerView.getAdapter();
+                            clearCachedHeights();
+                            adapterChanged(mAdapter);
+                        }
+                    }
 
+                    @Override
+                    public void onChildViewDetachedFromWindow(@NonNull View view) {
+                        // NO-OP
+                    }
+                });
     }
 
     public RecyclerView getRecyclerView() {
@@ -368,7 +375,7 @@ class DefaultScrollBar implements ScrollBar {
     }
 
     private int estimateNextPositionScrollUp(int currentPos, int scrollDistance,
-            OrientationHelper orientationHelper) {
+                                             OrientationHelper orientationHelper) {
         int nextPos = 0;
         int distance = 0;
         for (int i = currentPos - 1; i >= 0; i--) {
@@ -474,8 +481,8 @@ class DefaultScrollBar implements ScrollBar {
         // visible view.
         if (layoutManager.isViewPartiallyVisible(currentPosView,
                 /* completelyVisible= */ false, /* acceptEndPointInclusion= */ false)
-                        && orientationHelper.getDecoratedEnd(currentPosView)
-                                > orientationHelper.getEndAfterPadding()) {
+                && orientationHelper.getDecoratedEnd(currentPosView)
+                > orientationHelper.getEndAfterPadding()) {
             scrollDistance = Math.min(screenSize,
                     orientationHelper.getDecoratedEnd(currentPosView)
                             - orientationHelper.getEndAfterPadding());
