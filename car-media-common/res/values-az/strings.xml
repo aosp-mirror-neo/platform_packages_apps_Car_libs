@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Albom təsviri"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Başlıq yoxdur"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s tətbiqini açın"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Xəta baş verdi. Sonra cəhd edin."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"Xəta baş verdi. Sonra cəhd edin."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Hazırda onu etmək olmur"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Bu tətbiq onu edə bilmir"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Bu tətbiqi istifadə etmək üçün daxil olun"</string>

@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"​ក្រប​អាល់ប៊ុម"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"គ្មាន​ចំណងជើងទេ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"បើក %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"មានអ្វីមួយ​ខុស​ប្រក្រតី។ សូមព្យាយាម​នៅពេលក្រោយ។"</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"មានអ្វីមួយ​ខុស​ប្រក្រតី។ សូមព្យាយាម​នៅពេលក្រោយ។"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"មិនអាច​ធ្វើតាមសំណើនោះ​ឥឡូវនេះ​បានទេ"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"កម្មវិធីនេះ​មិនអាចធ្វើ​តាមសំណើនោះ​បានទេ"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ចូលគណនី ដើម្បីប្រើកម្មវិធីនេះ"</string>

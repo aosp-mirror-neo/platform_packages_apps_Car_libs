@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"앨범아트"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"제목 없음"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s 열기"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"문제가 발생했습니다. 나중에 다시 시도해 주세요."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"문제가 발생했습니다. 나중에 다시 시도해 주세요."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"지금은 요청한 작업을 할 수 없습니다."</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"요청한 작업이 이 앱에서 지원되지 않습니다."</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"이 앱을 사용하려면 로그인하세요."</string>

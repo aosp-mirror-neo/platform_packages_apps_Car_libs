@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"עטיפת אלבום"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"ללא שם"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"פתיחה של %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"משהו השתבש. יש לנסות מאוחר יותר."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"משהו השתבש. יש לנסות מאוחר יותר."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"לא ניתן לבצע את הפעולה הזו כרגע"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"אי אפשר לבצע פעולה זו באפליקציה הזו"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"יש להיכנס לחשבון כדי להשתמש באפליקציה הזו"</string>

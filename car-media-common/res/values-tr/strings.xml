@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Albüm Kapağı"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Başlıksız"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s uygulamasını aç"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Bir şeyler ters gitti. Daha sonra tekrar deneyin."</string>
+    <string name="default_playback_error_message" msgid="4044331619453864482">"Bir şeyler ters gitti. Daha sonra tekrar deneyin."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"İşlem şu anda gerçekleştirilemiyor"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Uygulama bu işlemi gerçekleştiremiyor"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Bu uygulamayı kullanmak için oturum açın"</string>

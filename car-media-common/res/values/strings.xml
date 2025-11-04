@@ -23,7 +23,7 @@
     <string name="open_action_for_app_title">Open %1$s</string>
 
     <!-- Default error message [CHAR LIMIT=100] -->
-    <string name="default_error_message">Something’s wrong. Try later.</string>
+    <string name="default_playback_error_message">Something’s wrong. Try later.</string>
     <!-- Error message set when the application state is invalid to fulfill the request. [CHAR LIMIT=100] -->
     <string name="error_code_app_error">Can’t do that right now</string>
     <!-- Error message set when the request is not supported by the application. [CHAR LIMIT=100] -->
