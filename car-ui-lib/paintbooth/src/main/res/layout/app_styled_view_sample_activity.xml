@@ -33,4 +33,11 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="Show App Styled View With System Bars"/>
+
+    <Button
+            android:id="@+id/show_app_styled_fragment_new_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="Show App Styled View In New Activity"/>
 </com.android.car.ui.FocusArea>
