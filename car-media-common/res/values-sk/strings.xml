@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"Obrázok albumu"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Bez názvu"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Otvoriť aplikáciu %1$s"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"Vyskytol sa problém. Skúste to znova."</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"Teraz to nie je možné"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Táto aplikácia to nedokáže"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Ak chcete použiť túto aplikáciu, prihláste sa"</string>
