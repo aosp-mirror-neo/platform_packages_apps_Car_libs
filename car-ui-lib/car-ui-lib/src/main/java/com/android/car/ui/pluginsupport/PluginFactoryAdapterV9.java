@@ -242,7 +242,7 @@ public final class PluginFactoryAdapterV9 implements PluginFactory {
 
             @Override
             public void onItemRangeChanged(int positionStart, int itemCount) {
-                for (int i = positionStart; i <= positionStart + itemCount; i++) {
+                for (int i = positionStart; i < positionStart + itemCount; i++) {
                     oemItems.set(i, toOemListItem(items.get(i)));
                 }
                 oemAdapter.notifyItemRangeChanged(positionStart, itemCount);
@@ -251,7 +251,7 @@ public final class PluginFactoryAdapterV9 implements PluginFactory {
             @Override
             public void onItemRangeChanged(int positionStart, int itemCount,
                     @Nullable Object payload) {
-                for (int i = positionStart; i <= positionStart + itemCount; i++) {
+                for (int i = positionStart; i < positionStart + itemCount; i++) {
                     oemItems.set(i, toOemListItem(items.get(i)));
                 }
                 oemAdapter.notifyItemRangeChanged(positionStart, itemCount, payload);
@@ -259,27 +259,31 @@ public final class PluginFactoryAdapterV9 implements PluginFactory {
 
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
-                for (int i = positionStart; i <= positionStart + itemCount; i++) {
-                    oemItems.add(i, toOemListItem(items.get(i)));
+                for (int i = 0; i < itemCount; i++) {
+                    oemItems.add(positionStart + i, toOemListItem(items.get(positionStart + i)));
                 }
                 oemAdapter.notifyItemRangeInserted(positionStart, itemCount);
             }
 
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
-                for (int i = positionStart; i <= positionStart + itemCount; i++) {
-                    oemItems.remove(i);
+                for (int i = 0; i < itemCount; i++) {
+                    oemItems.remove(positionStart);
                 }
                 oemAdapter.notifyItemRangeRemoved(positionStart, itemCount);
             }
 
             @Override
             public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                for (int i = fromPosition; i <= fromPosition + itemCount; i++) {
-                    ListItemOEMV1 item = oemItems.remove(i);
-                    oemItems.add(toPosition, item);
-                    toPosition++;
-                    oemAdapter.notifyItemMoved(fromPosition, toPosition);
+                int currentFrom = fromPosition;
+                for (int i = 0; i < itemCount; i++) {
+                    ListItemOEMV1 item = oemItems.remove(currentFrom);
+                    int currentTo = toPosition;
+                    if (currentFrom < currentTo) {
+                        currentTo--;
+                    }
+                    oemItems.add(currentTo, item);
+                    oemAdapter.notifyItemMoved(currentFrom, currentTo);
                 }
             }
 
