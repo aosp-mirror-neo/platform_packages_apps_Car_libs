@@ -15,13 +15,13 @@
  */
 package com.android.car.ui.paintbooth.appstyledview;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -36,14 +36,12 @@ import com.android.car.ui.toolbar.ToolbarController;
 /**
  * Sample activity to show app styled Dialog fragment.
  */
-public class AppStyledViewSampleActivity extends AppCompatActivity {
+public class AppStyledViewSampleActivity extends Activity {
     private AppStyledDialogController mAppStyledDialogController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-
         setContentView(R.layout.app_styled_view_sample_activity);
 
         ToolbarController toolbar = CarUi.requireToolbar(this);
@@ -52,7 +50,7 @@ public class AppStyledViewSampleActivity extends AppCompatActivity {
         toolbar.setLogo(R.drawable.ic_launcher);
 
         mAppStyledDialogController = new AppStyledDialogController(this);
-        View appStyledTestView = LayoutInflater.from(
+        View appStyledView = LayoutInflater.from(
                         mAppStyledDialogController.createContentViewConfigurationContext(this,
                                 R.style.AppStyledDialogThemeSample))
                 .inflate(R.layout.app_styled_view_test_sample, null, false);
@@ -62,8 +60,9 @@ public class AppStyledViewSampleActivity extends AppCompatActivity {
 
         Button btn = requireViewById(R.id.show_app_styled_fragment);
         Button btnWithBars = requireViewById(R.id.show_app_styled_fragment_with_system_bars);
+        Button btnNewActivity = requireViewById(R.id.show_app_styled_fragment_new_activity);
 
-        mAppStyledDialogController.setContentView(appStyledTestView);
+        mAppStyledDialogController.setContentView(appStyledView);
         mAppStyledDialogController.setNavIconType(NavIcon.CLOSE);
 
         btn.setOnClickListener(v -> {
@@ -75,6 +74,12 @@ public class AppStyledViewSampleActivity extends AppCompatActivity {
         btnWithBars.setOnClickListener(v -> {
             mAppStyledDialogController.setOnDismissListener(null);
             mAppStyledDialogController.show();
+        });
+
+        btnNewActivity.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ActivitySample.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         });
     }
 
@@ -107,4 +112,11 @@ public class AppStyledViewSampleActivity extends AppCompatActivity {
             showSystemBars();
         }
     }
-}
+
+    public static class ActivitySample extends Activity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.app_styled_view_test_sample);
+        }
+    }}
