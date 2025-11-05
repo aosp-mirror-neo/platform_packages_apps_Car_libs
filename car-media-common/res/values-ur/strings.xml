@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"البم آرٹ"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"کوئی عنوان نہیں ہے"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s کھولیں"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"کچھ غلط ہو گیا۔ بعد میں کوشش کریں۔"</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"ابھی وہ ایسا نہیں کر سکتا"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"یہ ایپ ایسا نہیں کر سکتی"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"اس ایپ کا استعمال کرنے کے لیے سائن ان کریں"</string>

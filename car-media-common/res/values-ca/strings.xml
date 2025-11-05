@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"Coberta de l’àlbum"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Sense títol"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Obre %1$s"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"S\'ha produït un error. Prova-ho més tard."</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"Ara mateix aquesta acció no es pot dur a terme"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"L\'aplicació no pot dur a terme aquesta acció"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Inicia la sessió per utilitzar aquesta aplicació"</string>

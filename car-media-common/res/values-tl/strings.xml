@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"Album Art"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Walang Pamagat"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Buksan ang %1$s"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"May problema. Subukan sa ibang pagkakataon."</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"Hindi iyon magagawa ngayon"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Hindi iyon magagawa ng app na ito"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Mag-sign in para gamitin ang app na ito"</string>

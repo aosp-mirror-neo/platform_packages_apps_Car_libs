@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"Ubuciko be-albhamu"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Asikho isihloko"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Vula i-%1$s"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"Kukhona okungalungile. Zama emuva kwesikhathi."</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"Ayikwazi ukwenza lokho khona manje"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Lolu hlelo lokusebenza alukwazi ukwenza lokho"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Ngena ngemvume ukuze usebenzise lolu hlelo lokusebenza"</string>

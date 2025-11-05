@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"ಆಲ್ಬಮ್ ಕಲೆ"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"ಯಾವುದೇ ಶೀರ್ಷಿಕೆಯಿಲ್ಲ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s ಅನ್ನು ತೆರೆಯಿರಿ"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"ಏನೋ ತಪ್ಪಾಗಿದೆ. ನಂತರ ಪ್ರಯತ್ನಿಸಿ."</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"ಸದ್ಯಕ್ಕೆ ಅದನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ಈ ಆ್ಯಪ್‌ನಿಂದ ಅದನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ಈ ಆ್ಯಪ್ ಬಳಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ"</string>

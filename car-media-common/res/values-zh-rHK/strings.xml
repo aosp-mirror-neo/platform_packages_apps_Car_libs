@@ -20,7 +20,8 @@
     <string name="album_art" msgid="3392647029019061691">"專輯封面"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"無標題"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"開啟 %1$s"</string>
-    <string name="default_playback_error_message" msgid="4044331619453864482">"發生錯誤，請稍後再試。"</string>
+    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
+    <skip />
     <string name="error_code_app_error" msgid="3608680401453743688">"目前無法執行此操作"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"應用程式不支援此操作"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"登入帳戶才能使用此應用程式"</string>
