@@ -30,7 +30,9 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven { url = uri(System.getenv("MAVEN_CENTRAL_URL")) }
+        System.getenv("MAVEN_CENTRAL_URL")
+            .takeIf { !it.isNullOrBlank() }
+            ?.let { maven { url = uri(it) } } ?: mavenCentral()
         gradlePluginPortal()
     }
 }
@@ -50,7 +52,9 @@ dependencyResolutionManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven { url = uri(System.getenv("MAVEN_CENTRAL_URL")) }
+        System.getenv("MAVEN_CENTRAL_URL")
+            .takeIf { !it.isNullOrBlank() }
+            ?.let { maven { url = uri(it) } } ?: mavenCentral()
     }
 }
 
