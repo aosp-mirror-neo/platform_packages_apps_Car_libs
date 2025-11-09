@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ඇල්බම කලාව"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"මාතෘකාවක් නැත"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s විවෘත කරන්න"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"යමක් වැරදී ඇත. පසුව උත්සාහ කරන්න."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"මේ දැන් එය කළ නොහැක"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"මෙම යෙදුමට එය කළ නොහැක"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"මෙම යෙදුම භාවිත කිරීමට පුරන්න"</string>

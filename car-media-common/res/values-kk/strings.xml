@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Альбом мұқабасы"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Атауы жоқ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s қолданбасын ашу"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"Бірдеңе дұрыс емес. Кейінірек қайталап көріңіз."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Мұны дәл қазір істеу мүмкін емес."</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Бұл қолданба мұны істей алмайды."</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Бұл қолданбаны пайдалану үшін аккаунтқа кіріңіз."</string>

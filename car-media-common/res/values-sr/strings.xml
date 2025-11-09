@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Омот албума"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Без наслова"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Отвори: %1$s"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"Дошло је до грешке. Пробајте касније."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Тренутно не може то да уради"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Ова апликација не може то да уради"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Пријавите се да бисте користили ову апликацију"</string>

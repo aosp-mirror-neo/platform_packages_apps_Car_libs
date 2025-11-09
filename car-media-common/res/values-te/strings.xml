@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ఆల్బమ్ ఆర్ట్"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"శీర్షిక లేదు"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$sను తెరవండి"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"ఏదో పొరపాటు జరిగింది. తర్వాత ట్రై చేయండి."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"దానిని ఇప్పుడు చేయడం సాధ్యపడదు"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ఈ యాప్ దానిని చేయలేదు"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ఈ యాప్‌ను ఉపయోగించడానికి సైన్ ఇన్ చేయండి"</string>

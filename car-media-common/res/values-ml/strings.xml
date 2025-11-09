@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ആൽബം ആർട്ട്"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"പേരില്ല"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s തുറക്കുക"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"എന്തോ കുഴപ്പമുണ്ട്. പിന്നീട് ശ്രമിക്കുക."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"അത് ഇപ്പോൾ ചെയ്യാനാകില്ല"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ഈ ആപ്പിന് അത് ചെയ്യാനാകില്ല"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ഈ ആപ്പ് ഉപയോഗിക്കാൻ സെെൻ ഇൻ ചെയ്യുക"</string>

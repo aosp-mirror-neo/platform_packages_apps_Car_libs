@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"एल्‍बम आर्ट"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"कोई टाइटल नहीं"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s खोलें"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"कोई गड़बड़ी हुई. कुछ देर बाद कोशिश करें."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"अभी नहीं किया जा सकता"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"इस ऐप्लिकेशन पर यह काम नहीं किया जा सकता"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"इस ऐप्लिकेशन का इस्तेमाल करने के लिए साइन इन करें"</string>

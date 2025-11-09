@@ -20,8 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ଆଲବମ୍ ଆର୍ଟ"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"କୌଣସି ଟାଇଟେଲ୍ ନାହିଁ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s ଖୋଲନ୍ତୁ"</string>
-    <!-- no translation found for default_playback_error_message (7379928364961557633) -->
-    <skip />
+    <string name="default_playback_error_message" msgid="7379928364961557633">"କିଛି ସମସ୍ୟା ଅଛି। ପରେ ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"ବର୍ତ୍ତମାନ ତାହା କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ଏହି ଆପ୍ ତାହା କରିପାରିବ ନାହିଁ"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ଏହି ଆପ୍ ବ୍ୟବହାର କରିବାକୁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ"</string>
