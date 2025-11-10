@@ -505,6 +505,7 @@ public final class CarUiUtils {
      * Use reflection to get app package name from the assigned package identifiers in the provided
      * {@link Context}. Due to performance implications, use method sparingly.
      */
+    @SuppressLint("DiscouragedApi")
     public static String getAppPackageName(@NonNull Context context) {
         SparseArray<String> r = getAssignedPackageIdentifiers(context.getAssets());
         for (int i = 0, n = r.size(); i < n; i++) {

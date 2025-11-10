@@ -36,7 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -84,6 +83,22 @@ public class Token {
         }
 
         return null;
+    }
+
+    /**
+     * Return {@code true} if there is an OEM design token shared library installed on device.
+     */
+    public static boolean isTokenSharedLibInstalled(@NonNull PackageManager packageManager) {
+        String packageName = getTokenSharedLibPackageName(packageManager);
+        if (packageName == null) {
+            return false;
+        }
+
+        try {
+            return packageManager.getApplicationInfo(packageName, 0).enabled;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     /**
@@ -219,7 +234,7 @@ public class Token {
             return tv.data;
         }
 
-        return ContextCompat.getColor(context, tv.resourceId);
+        return context.getColor(tv.resourceId);
     }
 
     private static HashMap<String, String> createTokenMap(@NonNull Context context) {
@@ -254,6 +269,7 @@ public class Token {
         return createTokenMap(context).hashCode();
     }
 
+    @SuppressWarnings("DefaultLocale")
     private static String getAttributeValue(Context context, TypedValue value) {
         int valueType = value.type;
 
@@ -273,6 +289,7 @@ public class Token {
                     TypedValue typedColor = new TypedValue();
                     array.getValue(1, typedColor);
                     String color = typedColor.coerceToString().toString();
+                    array.recycle();
 
                     return String.format("Text size: %f Text color %s", size, color);
                 } catch (Exception e) {

@@ -30,14 +30,15 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        mavenCentral()
+        System.getenv("MAVEN_CENTRAL_URL")
+            .takeIf { !it.isNullOrBlank() }
+            ?.let { maven { url = uri(it) } } ?: mavenCentral()
         gradlePluginPortal()
     }
 }
 
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention").version("0.9.0")
-}
+plugins { id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0") }
+
 apply(from = "buildLogic/findRepoRoot.settings.gradle.kts")
 
 dependencyResolutionManagement {
@@ -51,7 +52,9 @@ dependencyResolutionManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        mavenCentral()
+        System.getenv("MAVEN_CENTRAL_URL")
+            .takeIf { !it.isNullOrBlank() }
+            ?.let { maven { url = uri(it) } } ?: mavenCentral()
     }
 }
 
@@ -95,6 +98,7 @@ val projects =
         ":car-messenger-app" to "../../Messenger",
         ":car-messenger-app:testing" to "../../Messenger/testing",
         ":car-radio-app" to "../../Radio",
+        ":car-sensitiveapplock-app" to "../../SensitiveAppLock",
         ":test-media-app" to "../../tests/TestMediaApp",
         ":test-media-app:automotive" to "../../tests/TestMediaApp/automotive",
         ":test-media-app:automotive-cal" to "../../tests/TestMediaApp/automotive-cal",
@@ -107,6 +111,7 @@ val projects =
         ":car-dashcam-service" to "../../Dashcam/dashcam-service",
         ":car-dashcam-manager" to "../../Dashcam/dashcam-manager",
         ":m3u8lib" to "../../Dashcam/m3u8lib",
+        ":car-control-center-app" to "../../MultiDisplay/ControlCenter",
     )
 
 // Initialize each Gradle subproject

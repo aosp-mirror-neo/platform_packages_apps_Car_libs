@@ -4,10 +4,6 @@
 
 This directory contains a Gradle project for building AAOS applications and libraries from within the AOSP source tree.
 
-## Working Directory (**HUMANS READ THIS**)
-
-When working with changes that affect multiple projects, gemini must be launched from `packages/apps/Car` so it can write to all files.
-
 ## Project Structure
 
 This Gradle project includes applications and libraries from various directories within the AOSP checkout. The `settings.gradle.kts` file maps Gradle project names to their source code paths. For example:
@@ -38,3 +34,4 @@ Do not run `build` or `lint` tasks. Most of the project does not pass lints.
 ## Modern Gradle Practices
 
 This project uses modern Gradle practices like configuration avoidance and project isolation. When modifying the build, prefer `register` over `create` for tasks and configurations, and use convention plugins to share logic instead of cross-project configuration. For more details, see the [Gradle documentation](https://docs.gradle.org/). Remember to consult the docs if the Gradle version is newer than one you're familiar with.
+The latest Gradle practices can be found in the gemini-docs directory. Read @gemini-docs/gradle/INDEX.md

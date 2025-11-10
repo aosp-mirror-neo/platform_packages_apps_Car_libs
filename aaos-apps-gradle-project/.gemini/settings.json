@@ -1,0 +1,23 @@
+{
+  "context": {
+    "fileFiltering": {
+      "respectGitIgnore": true,
+      "enableRecursiveFileSearch": true
+    },
+    "includeDirectories": [
+      "../../libs",
+      "../../BugReport",
+      "../../Calendar",
+      "../../Dashcam",
+      "../../Dialer",
+      "../../DriverUI",
+      "../../Media",
+      "../../Messenger",
+      "../../MultiDisplay",
+      "../../Radio",
+      "../../SensitiveAppLock",
+      "../../tests"
+    ],
+    "loadFromIncludeDirectories": true
+  }
+}

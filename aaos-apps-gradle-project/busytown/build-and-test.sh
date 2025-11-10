@@ -7,6 +7,13 @@ SCRIPTS_DIR=$(realpath "${0%/*}")
 # Functions defined in envsetup.sh
 setup_build_environment
 
+DEFAULT_MAVEN_URL="https://repo.maven.apache.org/maven2"
+if [ -n "${1-}" ]; then
+  export MAVEN_CENTRAL_URL="$1"
+else
+  export MAVEN_CENTRAL_URL="$DEFAULT_MAVEN_URL"
+fi
+
 # Set default version codes and names, allow overrides from the calling shell
 DEFAULT_VERSION_CODE=34
 DEFAULT_VERSION_NAME=${BUILD_NUMBER:-34}
