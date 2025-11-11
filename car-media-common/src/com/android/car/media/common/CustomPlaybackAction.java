@@ -16,13 +16,17 @@
 
 package com.android.car.media.common;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackStateWrapper;
+
+import java.util.Objects;
 
 
 /**
@@ -42,14 +46,26 @@ public class CustomPlaybackAction {
     /** Any additional information to send along with the action identifier */
     @Nullable
     public final Bundle mExtras;
+    /** IconCompat to display for this custom action */
+    @NonNull public final IconCompat mIconCompat;
 
     /**
      * Creates a custom action
      */
-    public CustomPlaybackAction(@NonNull Drawable icon, @NonNull String action,
-            @Nullable Bundle extras) {
+    public static CustomPlaybackAction create(@NonNull Context context, @NonNull String action,
+            @Nullable Bundle extras, @NonNull IconCompat iconCompat) {
+        return new CustomPlaybackAction(Objects.requireNonNull(iconCompat.loadDrawable(context)),
+                action, extras, iconCompat);
+    }
+
+    private CustomPlaybackAction(
+            @NonNull Drawable icon,
+            @NonNull String action,
+            @Nullable Bundle extras,
+            @NonNull IconCompat iconCompat) {
         mIcon = icon;
         mAction = action;
         mExtras = extras;
+        mIconCompat = iconCompat;
     }
 }
