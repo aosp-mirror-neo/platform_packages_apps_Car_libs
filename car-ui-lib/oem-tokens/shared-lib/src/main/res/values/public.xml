@@ -15,6 +15,7 @@
 -->
 <resources>
     <!-- Color tokens -->
+    <public name="colorOemSeed" id="0x00770000" type="attr" />
     <public name="colorPrimary" id="0x00770001" type="attr" />
     <public name="colorOnPrimary" id="0x00770002" type="attr" />
     <public name="colorPrimaryContainer" id="0x00770003" type="attr" />
@@ -31,6 +32,8 @@
     <public name="colorOnError" id="0x0077000E" type="attr" />
     <public name="colorErrorContainer" id="0x0077000F" type="attr" />
     <public name="colorOnErrorContainer" id="0x00770010" type="attr" />
+    <public name="colorBackground" id="0x00770011" type="attr" />
+    <public name="colorOnBackground" id="0x00770012" type="attr" />
     <public name="colorSurface" id="0x00770013" type="attr" />
     <public name="colorOnSurface" id="0x00770014" type="attr" />
     <public name="colorSurfaceVariant" id="0x00770015" type="attr" />

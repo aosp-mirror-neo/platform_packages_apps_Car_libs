@@ -17,6 +17,8 @@
     <declare-styleable name="OemTokens">
         <attr name="oemTokenOverrideEnabled" format="boolean" />
 
+        <attr name="oemColorSeed" format="color" />
+
         <attr name="oemColorPrimary" format="color" />
         <attr name="oemColorOnPrimary" format="color" />
         <attr name="oemColorPrimaryContainer" format="color" />
@@ -38,6 +40,8 @@
         <attr name="oemColorErrorContainer" format="color" />
         <attr name="oemColorOnErrorContainer" format="color" />
 
+        <attr name="oemColorBackground" format="color" />
+        <attr name="oemColorOnBackground" format="color" />
         <attr name="oemColorSurface" format="color" />
         <attr name="oemColorOnSurface" format="color" />
         <attr name="oemColorSurfaceVariant" format="color" />

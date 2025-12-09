@@ -54,6 +54,8 @@ fun oemColorScheme(oemContext: Context): ColorScheme {
     val oemColorOnError = Token.getColor(oemContext, R.attr.oemColorOnError)
     val oemColorErrorContainer = Token.getColor(oemContext, R.attr.oemColorErrorContainer)
     val oemColorOnErrorContainer = Token.getColor(oemContext, R.attr.oemColorOnErrorContainer)
+    val oemColorBackground = Token.getColor(oemContext, R.attr.oemColorBackground)
+    val oemColorOnBackground = Token.getColor(oemContext, R.attr.oemColorOnBackground)
     val oemColorSurface = Token.getColor(oemContext, R.attr.oemColorSurface)
     val oemColorOnSurface = Token.getColor(oemContext, R.attr.oemColorOnSurface)
     val oemColorSurfaceVariant = Token.getColor(oemContext, R.attr.oemColorSurfaceVariant)
@@ -90,8 +92,8 @@ fun oemColorScheme(oemContext: Context): ColorScheme {
         onTertiary = Color(oemColorOnTertiary),
         tertiaryContainer = Color(oemColorTertiaryContainer),
         onTertiaryContainer = Color(oemColorOnTertiaryContainer),
-        background = Color(oemColorSurface),
-        onBackground = Color(oemColorOnSurface),
+        background = Color(oemColorBackground),
+        onBackground = Color(oemColorOnBackground),
         surface = Color(oemColorSurface),
         onSurface = Color(oemColorOnSurface),
         surfaceVariant = Color(oemColorSurfaceVariant),

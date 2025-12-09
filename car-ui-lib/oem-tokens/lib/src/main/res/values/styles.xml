@@ -144,6 +144,8 @@
         <item name="oemColorOnError">?attr/oemColorErrorPalette100</item>
         <item name="oemColorErrorContainer">?attr/oemColorErrorPalette90</item>
         <item name="oemColorOnErrorContainer">?attr/oemColorErrorPalette10</item>
+        <item name="oemColorBackground">?attr/oemColorNeutralPalette99</item>
+        <item name="oemColorOnBackground">?attr/oemColorNeutralPalette10</item>
         <item name="oemColorSurface">?attr/oemColorNeutralPalette99</item>
         <item name="oemColorOnSurface">?attr/oemColorNeutralPalette10</item>
         <item name="oemColorSurfaceVariant">?attr/oemColorNeutralVariantPalette90</item>
@@ -193,6 +195,8 @@
         <item name="oemColorOnError">?attr/oemColorErrorPalette20</item>
         <item name="oemColorErrorContainer">?attr/oemColorErrorPalette30</item>
         <item name="oemColorOnErrorContainer">?attr/oemColorErrorPalette90</item>
+        <item name="oemColorBackground">?attr/oemColorNeutralPalette10</item>
+        <item name="oemColorOnBackground">?attr/oemColorNeutralPalette90</item>
         <item name="oemColorSurface">?attr/oemColorNeutralPalette10</item>
         <item name="oemColorOnSurface">?attr/oemColorNeutralPalette80</item>
         <item name="oemColorSurfaceVariant">?attr/oemColorNeutralVariantPalette30</item>
@@ -242,6 +246,8 @@
         <item name="oemColorOnError">?com.android.oem.tokens:attr/colorOnError</item>
         <item name="oemColorErrorContainer">?com.android.oem.tokens:attr/colorErrorContainer</item>
         <item name="oemColorOnErrorContainer">?com.android.oem.tokens:attr/colorOnErrorContainer</item>
+        <item name="oemColorBackground">?com.android.oem.tokens:attr/colorBackground</item>
+        <item name="oemColorOnBackground">?com.android.oem.tokens:attr/colorOnBackground</item>
         <item name="oemColorSurface">?com.android.oem.tokens:attr/colorSurface</item>
         <item name="oemColorOnSurface">?com.android.oem.tokens:attr/colorOnSurface</item>
         <item name="oemColorSurfaceVariant">?com.android.oem.tokens:attr/colorSurfaceVariant</item>
@@ -511,6 +517,8 @@
         <item name="com.android.oem.tokens:colorOnError">?attr/com.android.oem.tokens:colorErrorPalette100</item>
         <item name="com.android.oem.tokens:colorErrorContainer">?attr/com.android.oem.tokens:colorErrorPalette90</item>
         <item name="com.android.oem.tokens:colorOnErrorContainer">?attr/com.android.oem.tokens:colorErrorPalette10</item>
+        <item name="com.android.oem.tokens:colorBackground">?attr/com.android.oem.tokens:colorNeutralPalette99</item>
+        <item name="com.android.oem.tokens:colorOnBackground">?attr/com.android.oem.tokens:colorNeutralPalette10</item>
         <item name="com.android.oem.tokens:colorSurface">?attr/com.android.oem.tokens:colorNeutralPalette99</item>
         <item name="com.android.oem.tokens:colorOnSurface">?attr/com.android.oem.tokens:colorNeutralPalette10</item>
         <item name="com.android.oem.tokens:colorSurfaceVariant">?attr/com.android.oem.tokens:colorNeutralVariantPalette90</item>
@@ -560,6 +568,8 @@
         <item name="com.android.oem.tokens:colorOnError">?attr/com.android.oem.tokens:colorErrorPalette20</item>
         <item name="com.android.oem.tokens:colorErrorContainer">?attr/com.android.oem.tokens:colorErrorPalette30</item>
         <item name="com.android.oem.tokens:colorOnErrorContainer">?attr/com.android.oem.tokens:colorErrorPalette90</item>
+        <item name="com.android.oem.tokens:colorBackground">?attr/com.android.oem.tokens:colorNeutralPalette10</item>
+        <item name="com.android.oem.tokens:colorOnBackground">?attr/com.android.oem.tokens:colorNeutralPalette90</item>
         <item name="com.android.oem.tokens:colorSurface">?attr/com.android.oem.tokens:colorNeutralPalette10</item>
         <item name="com.android.oem.tokens:colorOnSurface">?attr/com.android.oem.tokens:colorNeutralPalette80</item>
         <item name="com.android.oem.tokens:colorSurfaceVariant">?attr/com.android.oem.tokens:colorNeutralVariantPalette30</item>
@@ -593,7 +603,7 @@
     </style>
 
     <style name="BaseTextAppearance">
-        <item name="android:textColor">?oemColorOnSurface</item>
+        <item name="android:textColor">?oemColorOnBackground</item>
         <item name="android:textColorHighlight">?android:textColorHighlight</item>
         <item name="android:textColorHint">?android:textColorHint</item>
         <item name="android:textColorLink">?android:textColorLink</item>
