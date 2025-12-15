@@ -205,32 +205,35 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
-        // Inset API not supported before Android R. Fallback to approximation
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
-            WindowInsets windowInsets =
-                    unwrappedContext.getSystemService(
-                            WindowManager.class).getCurrentWindowMetrics().getWindowInsets();
-            android.graphics.Insets insets = windowInsets.getInsets(insetType);
+        WindowInsets windowInsets = null;
 
+        if (mContentHolder != null && mContentHolder.getRootWindowInsets() != null) {
+            windowInsets = mContentHolder.getRootWindowInsets();
+        } else {
+            Activity activity = CarUiUtils.getActivity(mContext);
+            if (activity != null && activity.getWindow() != null) {
+                windowInsets =
+                        activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
+            }
+        }
+
+        if (windowInsets != null) {
+            Insets insets =
+                    WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
             return insets.top + insets.bottom;
         }
 
-        float fallbackInset =
-                (float) (getWindowBounds().height() * (1 - VISIBLE_SCREEN_PERCENTAGE));
-        Activity activity = CarUiUtils.getActivity(mContext);
-        if (activity == null) {
-            return fallbackInset;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
+            WindowInsets metricsInsets = unwrappedContext.getSystemService(WindowManager.class)
+                    .getCurrentWindowMetrics()
+                    .getWindowInsets();
+            android.graphics.Insets insets = metricsInsets.getInsets(insetType);
+            return insets.top + insets.bottom;
         }
 
-        WindowInsets windowInsets =
-                activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
-        if (windowInsets == null) {
-            return fallbackInset;
-        }
-
-        Insets insets = WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
-        return insets.top + insets.bottom;
+        // fallback
+        return (float) (getWindowBounds().height() * (1 - VISIBLE_SCREEN_PERCENTAGE));
     }
 
     @SuppressLint("NewApi")
@@ -238,31 +241,35 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
-        // Inset API not supported before Android R. Fallback to approximation
+        WindowInsets windowInsets = null;
+
+        if (mContentHolder != null && mContentHolder.getRootWindowInsets() != null) {
+            windowInsets = mContentHolder.getRootWindowInsets();
+        } else {
+            Activity activity = CarUiUtils.getActivity(mContext);
+            if (activity != null && activity.getWindow() != null) {
+                windowInsets =
+                        activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
+            }
+        }
+
+        if (windowInsets != null) {
+            Insets insets =
+                    WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
+            return insets.left + insets.right;
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
-            WindowInsets windowInsets = unwrappedContext.getSystemService(
+            WindowInsets metricsInsets = unwrappedContext.getSystemService(
                     WindowManager.class).getCurrentWindowMetrics().getWindowInsets();
-            android.graphics.Insets insets = windowInsets.getInsets(insetType);
+            android.graphics.Insets insets = metricsInsets.getInsets(insetType);
 
             return insets.left + insets.right;
         }
 
-        float fallbackInset =
-                (float) (getWindowBounds().width() * (1 - VISIBLE_SCREEN_PERCENTAGE));
-        Activity activity = CarUiUtils.getActivity(mContext);
-        if (activity == null) {
-            return fallbackInset;
-        }
-
-        WindowInsets windowInsets =
-                activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
-        if (windowInsets == null) {
-            return fallbackInset;
-        }
-
-        Insets insets = WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
-        return insets.left + insets.right;
+        // fallback
+        return (float) (getWindowBounds().width() * (1 - VISIBLE_SCREEN_PERCENTAGE));
     }
 
     private Rect getWindowBounds() {
