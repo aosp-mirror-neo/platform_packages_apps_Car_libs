@@ -584,7 +584,8 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     public void setContentView(@NonNull View view) {
         initViewTreeOwners();
         mContentHolder.removeAllViews();
-        mContentHolder.addView(view);
+        mContentHolder.addView(
+                view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         mOriginalContentPaddingBottom = view.getPaddingBottom();
     }
@@ -593,18 +594,14 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     public void setContentView(@NonNull View view, @Nullable ViewGroup.LayoutParams params) {
         initViewTreeOwners();
         mContentHolder.removeAllViews();
-        mContentHolder.addView(view);
+        mContentHolder.addView(view, params);
 
         mOriginalContentPaddingBottom = view.getPaddingBottom();
     }
 
     @Override
     public void addContentView(@NonNull View view, @Nullable ViewGroup.LayoutParams params) {
-        initViewTreeOwners();
-        mContentHolder.removeAllViews();
-        mContentHolder.addView(view);
-
-        mOriginalContentPaddingBottom = view.getPaddingBottom();
+        setContentView(view, params);
     }
 
     public void setSceneType(int sceneType) {
