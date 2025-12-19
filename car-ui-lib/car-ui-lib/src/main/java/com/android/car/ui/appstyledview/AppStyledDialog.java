@@ -125,27 +125,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        WindowManager.LayoutParams params = window.getAttributes();
-        params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
-                R.dimen.car_ui_app_styled_dialog_dim_amount);
-        switch (mSceneType) {
-            case AppStyledDialogController.SceneType.ENTER:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Enter;
-                break;
-            case AppStyledDialogController.SceneType.EXIT:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Exit;
-                break;
-            case AppStyledDialogController.SceneType.INTERMEDIATE:
-                params.windowAnimations =
-                        R.style.Widget_CarUi_AppStyledView_WindowAnimations_Intermediate;
-                break;
-            case AppStyledDialogController.SceneType.SINGLE:
-            default:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations;
-                break;
-        }
-        window.setAttributes(params);
-
         copySystemUiVisibility();
         configureImeInsetFit();
         updateAttributes();
@@ -197,6 +176,8 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                 params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations;
                 break;
         }
+        params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
+                R.dimen.car_ui_app_styled_dialog_dim_amount);
         window.setAttributes(params);
     }
 
