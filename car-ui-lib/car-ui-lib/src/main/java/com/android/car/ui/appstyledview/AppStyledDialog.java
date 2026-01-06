@@ -427,8 +427,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         params.height = startHeight - currentResize;
         mContentHolder.setLayoutParams(params);
 
-        mOriginalContentPaddingBottom = mContentHolder.getChildAt(0).getPaddingBottom();
-
         // If resizing, add padding to the content to push elements up above overlap
         if (mOriginalContentPaddingBottom != -1) {
             int imeOverlapPx = (int) CarUiUtils.dpToPixel(mContext.getResources(), IME_OVERLAP_DP);
