@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -222,6 +223,11 @@ public class MediaSessionHelperTest {
     }
 
     private void initializeMediaSessionHelper(boolean withValidSources) {
+        initializeMediaSessionHelper(withValidSources, null);
+    }
+
+    private void initializeMediaSessionHelper(boolean withValidSources,
+            MediaSessionHelper.SessionProvider sessionProvider) {
         MediaSessionHelper.InputFactory inputFactory = new MediaSessionHelper.InputFactory() {
             @Override
             public MediaSessionManager getMediaSessionManager(Context appContext) {
@@ -271,6 +277,22 @@ public class MediaSessionHelperTest {
                     }
                 };
 
-        mMediaSessionHelper = new MediaSessionHelper(mContext, notificationProvider, inputFactory);
+        mMediaSessionHelper = new MediaSessionHelper(mContext, notificationProvider, inputFactory,
+                sessionProvider);
+    }
+
+    @Test
+    public void usesSessionProvider_whenProvided() {
+        MediaSessionHelper.SessionProvider mockProvider =
+                org.mockito.Mockito.mock(MediaSessionHelper.SessionProvider.class);
+
+        initializeMediaSessionHelper(false, mockProvider);
+
+        // Verify getActiveSessions delegates to provider
+        // Triggers init -> invokeActiveSessionsListener -> getActiveSessions
+        verify(mockProvider).getActiveSessions(mMediaSessionManager);
+
+        // Verify registerActiveSessionsListener delegates to provider
+        verify(mockProvider).registerActiveSessionsListener(eq(mMediaSessionManager), any(), any());
     }
 }
