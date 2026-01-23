@@ -82,7 +82,17 @@ public class MediaModels {
      * Creates models tied to {@link MediaSessionHelper#getMediaSource}
      */
     public MediaModels(Context context, NotificationProvider notificationProvider) {
-        mMediaSessionHelper = new MediaSessionHelper(context, notificationProvider);
+        this(context, notificationProvider, /* sessionProvider= */ null);
+    }
+
+    /**
+     * Creates models tied to {@link MediaSessionHelper#getMediaSource},
+     * using a custom MediaSessionHelper session provider.
+     */
+    public MediaModels(Context context, NotificationProvider notificationProvider,
+            MediaSessionHelper.SessionProvider sessionProvider) {
+        mMediaSessionHelper = new MediaSessionHelper(context, notificationProvider,
+                sessionProvider);
         LiveData<MediaSource> srcData = mMediaSessionHelper.getMediaSource();
         mMediaSourceViewModel = new MediaSourceViewModel(context, srcData);
         LiveData<BrowsingState> browseState = mMediaSourceViewModel.getBrowsingState();
