@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * Source of MediaSources that listens to {@link MediaSessionManager} media session changes.
@@ -90,6 +91,8 @@ public class MediaSessionHelper extends MediaController.Callback {
     private static MediaSessionHelper sInstance;
 
     private PackageManager mPackageManager;
+    @Nullable
+    private final SessionProvider mSessionProvider;
 
     /**
      *  Returns the singleton.
@@ -105,7 +108,7 @@ public class MediaSessionHelper extends MediaController.Callback {
 
     /** Returns the singleton. */
     public static MediaSessionHelper getInstance(@NonNull Context context,
-            @NonNull NotificationProvider notificationProvider) {
+            @Nullable NotificationProvider notificationProvider) {
         if (sInstance == null) {
             sInstance =
                     new MediaSessionHelper(context.getApplicationContext(), notificationProvider);
@@ -137,6 +140,20 @@ public class MediaSessionHelper extends MediaController.Callback {
 
         @NonNull
         List<MediaSource> getMediaSources(List<MediaController> mediaControllers);
+    }
+
+    /**
+     * Interface to provide the active media sessions and listeners.
+     */
+    public interface SessionProvider {
+        /** Returns the active media sessions. */
+        List<MediaController> getActiveSessions(MediaSessionManager manager);
+
+
+        /** Registers a listener for active session changes. */
+        void registerActiveSessionsListener(MediaSessionManager manager, Executor executor,
+                MediaSessionManager.OnActiveSessionsChangedListener listener);
+
     }
 
     private static InputFactory createInputFactory(@NonNull Context appContext) {
@@ -187,21 +204,38 @@ public class MediaSessionHelper extends MediaController.Callback {
      *  Creates a new class instance.
      */
     public MediaSessionHelper(@NonNull Context context,
-            @NonNull NotificationProvider notificationProvider) {
+            @Nullable NotificationProvider notificationProvider) {
         this(context, notificationProvider, createInputFactory(context));
     }
 
     @VisibleForTesting
-    MediaSessionHelper(Context context, NotificationProvider notificationProvider,
+    MediaSessionHelper(Context context, @Nullable NotificationProvider notificationProvider,
             InputFactory inputFactory) {
+        this(context, notificationProvider, inputFactory, /* sessionProvider= */ null);
+    }
+
+
+    /**
+     * Creates a new class instance with a session provider.
+     */
+    MediaSessionHelper(@NonNull Context context,
+            @Nullable NotificationProvider notificationProvider,
+            @Nullable SessionProvider sessionProvider) {
+        this(context, notificationProvider, createInputFactory(context), sessionProvider);
+    }
+
+    @VisibleForTesting
+    MediaSessionHelper(Context context,
+            @Nullable NotificationProvider notificationProvider,
+            InputFactory inputFactory,
+            @Nullable SessionProvider sessionProvider) {
         mContext = new WeakReference<>(context);
         mPackageManager = context.getPackageManager();
         mNotificationProvider = notificationProvider;
         mInputFactory = inputFactory;
-        if (context.getApplicationContext() != null) {
-            // Get application shared preferences if available
-            context = context.getApplicationContext();
-        }
+        mSessionProvider = sessionProvider;
+        // Get application shared preferences if available
+        context = context.getApplicationContext();
         mSharedPrefs = context.getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         // Register our listener to be notified of changes in the active media sessions.
         mMediaSessionManager = mInputFactory.getMediaSessionManager(mContext.get());
@@ -209,8 +243,8 @@ public class MediaSessionHelper extends MediaController.Callback {
             Log.e(TAG, "MediaSessionManager is null");
             return;
         }
-        mMediaSessionManager.addOnActiveSessionsChangedListener(mActiveSessionsListener, null);
 
+        registerActiveSessionsListener();
         // Set initial value
         setInitialMediaSource();
     }
@@ -335,8 +369,7 @@ public class MediaSessionHelper extends MediaController.Callback {
     @Override
     public void onPlaybackStateChanged(@Nullable PlaybackState state) {
         if (state != null && isPausedOrActive(state.getState())) {
-            onMediaControllersChange(
-                    mMediaSessionManager.getActiveSessions(/* notificationListener= */ null));
+            onMediaControllersChange(getActiveSessions());
         }
     }
 
@@ -373,7 +406,8 @@ public class MediaSessionHelper extends MediaController.Callback {
         List<MediaController> activeMediaControllers = new ArrayList<>();
         List<MediaController> activeOrPausedMediaControllers = new ArrayList<>();
         List<MediaController> filteredControllers = getMediaControllersWithMediaNotifications(
-                mMediaSessionManager.getActiveSessions(null));
+                getActiveSessions());
+
         parseMediaControllers(filteredControllers,
                 activeMediaControllers, activeOrPausedMediaControllers);
         MediaSource savedMediaSource = null;
@@ -498,7 +532,8 @@ public class MediaSessionHelper extends MediaController.Callback {
                 continue;
             }
 
-            if (mNotificationProvider.isMediaNotification(notification)) {
+            if (mNotificationProvider != null
+                    && mNotificationProvider.isMediaNotification(notification)) {
                 mediaStyleNotificationPackages.add(sbn.getPackageName());
             }
         }
@@ -539,6 +574,35 @@ public class MediaSessionHelper extends MediaController.Callback {
         }
         if (playbackState.getState() != PlaybackState.STATE_PAUSED) {
             mediaController.getTransportControls().pause();
+        }
+    }
+
+    /**
+     * Gets the active sessions.
+     * <p>
+     * The default implementation only supports the current user (process user).
+     * A custom {@link SessionProvider} can be provided to change this behavior.
+     */
+    private List<MediaController> getActiveSessions() {
+        if (mSessionProvider != null) {
+            return mSessionProvider.getActiveSessions(mMediaSessionManager);
+        }
+        return mMediaSessionManager.getActiveSessions(/* notificationListener= */ null);
+    }
+
+    /**
+     * Registers a listener for active sessions changes.
+     * <p>
+     * A custom {@link SessionProvider} can be provided to change this behavior.
+     */
+    private void registerActiveSessionsListener() {
+        if (mSessionProvider != null) {
+            mSessionProvider.registerActiveSessionsListener(
+                    mMediaSessionManager, mContext.get().getMainExecutor(),
+                    mActiveSessionsListener);
+        } else {
+            mMediaSessionManager.addOnActiveSessionsChangedListener(mActiveSessionsListener,
+                    /* notificationListener= */ null);
         }
     }
 }
