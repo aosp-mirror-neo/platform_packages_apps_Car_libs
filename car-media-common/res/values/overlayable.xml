@@ -218,7 +218,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="layout" name="play_pause_stop_button_layout"/>
       <item type="layout" name="playback_fragment"/>
       <item type="string" name="album_art"/>
-      <item type="string" name="default_error_message"/>
+      <item type="string" name="default_playback_error_message"/>
       <item type="string" name="error_code_action_aborted"/>
       <item type="string" name="error_code_app_error"/>
       <item type="string" name="error_code_authentication_expired"/>

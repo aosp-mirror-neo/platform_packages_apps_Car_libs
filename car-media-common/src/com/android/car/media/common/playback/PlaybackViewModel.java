@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.graphics.drawable.IconCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -878,7 +879,7 @@ public class PlaybackViewModel {
         @OptIn(markerClass = UnstableApi.class)
         @Nullable
         public CustomPlaybackAction fetchDrawable(@NonNull Context context) {
-            Drawable icon;
+            IconCompat iconCompat;
             @CommandButton.Icon int iconId = (mExtras == null) ? ICON_UNDEFINED : mExtras.getInt(
                     androidx.media3.session.MediaConstants.EXTRAS_KEY_COMMAND_BUTTON_ICON_COMPAT,
                     ICON_UNDEFINED);
@@ -886,9 +887,9 @@ public class PlaybackViewModel {
             CommandButton button = new CommandButton.Builder(iconId)
                     .setPlayerCommand(COMMAND_PLAY_PAUSE).build();
             if (button.iconResId != 0) {
-                icon = context.getDrawable(button.iconResId);
+                iconCompat = IconCompat.createWithResource(context, button.iconResId);
             } else if (mPackageName == null) {
-                icon = context.getDrawable(mIcon);
+                iconCompat = IconCompat.createWithResource(context, mIcon);
             } else {
                 Resources resources = getResourcesForPackage(context, mPackageName);
                 if (resources == null) {
@@ -901,10 +902,10 @@ public class PlaybackViewModel {
                     // bucket.
                     resources.updateConfiguration(context.getResources().getConfiguration(),
                             context.getResources().getDisplayMetrics());
-                    icon = resources.getDrawable(mIcon, null);
+                    iconCompat = IconCompat.createWithResource(resources, mPackageName, mIcon);
                 }
             }
-            return new CustomPlaybackAction(icon, mAction, mExtras);
+            return CustomPlaybackAction.create(context, mAction, mExtras, iconCompat);
         }
 
         private Resources getResourcesForPackage(Context context, String packageName) {

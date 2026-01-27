@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ปกอัลบั้ม"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"ไม่มีชื่อ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"เปิด %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"มีข้อผิดพลาดเกิดขึ้น ลองอีกครั้งในภายหลัง"</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"เกิดข้อผิดพลาด โปรดลองดำเนินการในภายหลัง"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"ดำเนินการดังกล่าวไม่ได้ในขณะนี้"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"แอปนี้ดำเนินการดังกล่าวไม่ได้"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ลงชื่อเข้าใช้เพื่อใช้แอปนี้"</string>

@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"অ্যালবাম আর্ট"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"কোনও শীর্ষক নেই"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s খুলুন"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"কোনও সমস্যা হয়েছে। পরে চেষ্টা করুন।"</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করে দেখুন।"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"এই কাজটি এখন করা যাবে না"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"এই অ্যাপে এই কাজটি করা যাবে না"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"এই অ্যাপ ব্যবহার করতে সাইন-ইন করুন"</string>

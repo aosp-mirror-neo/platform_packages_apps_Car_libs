@@ -145,10 +145,10 @@ public abstract class PlaybackErrorsHelper {
         if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
             Integer messageId = ERROR_CODE_MESSAGES_MAP.get(state.getErrorCode());
             return messageId != null ? ctx.getString(messageId) : ctx.getString(
-                    R.string.default_error_message);
+                    R.string.default_playback_error_message);
         }
         if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
-            return ctx.getString(R.string.default_error_message);
+            return ctx.getString(R.string.default_playback_error_message);
         }
         return null;
     }

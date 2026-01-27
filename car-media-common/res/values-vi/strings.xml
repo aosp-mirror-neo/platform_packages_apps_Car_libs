@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Ảnh bìa album"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Không có tiêu đề"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Mở %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Đã xảy ra lỗi. Hãy thử lại sau."</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"Đã xảy ra lỗi. Hãy thử lại sau."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Không thể thực hiện yêu cầu đó ngay bây giờ"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Ứng dụng này không thể thực hiện yêu cầu đó"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Hãy đăng nhập để dùng ứng dụng này"</string>

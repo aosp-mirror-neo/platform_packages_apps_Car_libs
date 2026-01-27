@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Copertina dell\'album"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Nessun titolo"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"Apri %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Si è verificato un problema. Prova più tardi."</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"Si è verificato un problema. Prova più tardi."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Al momento non è possibile svolgere l\'operazione"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Questa app non supporta l\'azione richiesta"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Accedi per usare questa app"</string>

@@ -22,7 +22,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -77,14 +76,10 @@ public class AppStyledViewControllerImpl implements AppStyledViewController {
 
     @Override
     public int getContentAreaWidth() {
-        Window dialogWindow = mDialog.getWindow();
-        if (dialogWindow == null) {
-            return -1;
+        WindowManager.LayoutParams params =
+                mDialog.getDialogWindowLayoutParam(new WindowManager.LayoutParams());
 
-        }
-
-        int width = dialogWindow.getAttributes().width;
-
+        int width = params.width;
         int orientation = mContext.getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             return width - mContext.getResources().getDimensionPixelSize(
@@ -96,12 +91,10 @@ public class AppStyledViewControllerImpl implements AppStyledViewController {
 
     @Override
     public int getContentAreaHeight() {
-        Window dialogWindow = mDialog.getWindow();
-        if (dialogWindow == null) {
-            return -1;
-        }
+        WindowManager.LayoutParams params =
+                mDialog.getDialogWindowLayoutParam(new WindowManager.LayoutParams());
 
-        int height = dialogWindow.getAttributes().height;
+        int height = params.height;
         int orientation = mContext.getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             return height;
@@ -152,7 +145,7 @@ public class AppStyledViewControllerImpl implements AppStyledViewController {
 
     @Override
     public WindowManager.LayoutParams getAttributes() {
-        return mDialog.getWindowLayoutParams();
+        return mDialog.getDialogWindowLayoutParam(new WindowManager.LayoutParams());
     }
 
     /**

@@ -138,8 +138,6 @@ public class TokenActivity extends Activity {
         list.add(new Pair<>("colorErrorOnContainer",
                 R.attr.oemColorOnErrorContainer));
 
-        list.add(new Pair<>("colorBackground", R.attr.oemColorBackground));
-        list.add(new Pair<>("colorOnBackground", R.attr.oemColorOnBackground));
         list.add(new Pair<>("colorSurface", R.attr.oemColorSurface));
         list.add(new Pair<>("colorOnSurface", R.attr.oemColorOnSurface));
         list.add(new Pair<>("colorSurfaceVariant", R.attr.oemColorSurfaceVariant));

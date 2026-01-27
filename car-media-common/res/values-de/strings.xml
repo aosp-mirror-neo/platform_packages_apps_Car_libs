@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"Albumcover"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"Kein Titel"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s öffnen"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"Ein Fehler ist aufgetreten. Versuch es später noch mal."</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"Ein Fehler ist aufgetreten. Versuche es später noch einmal."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"Das ist gerade nicht möglich"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"Diese App kann das nicht"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"Melde dich an, um diese App zu verwenden"</string>

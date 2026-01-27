@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"جلد آلبوم"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"بی‌عنوان"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"باز کردن %1$s"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"مشکلی رخ داد. بعداً امتحان کنید."</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"مشکلی رخ داد. بعداً امتحان کنید."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"درحال‌حاضر انجام نمی‌شود"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"این برنامه نمی‌تواند این کار را انجام دهد"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"برای استفاده از این برنامه، به سیستم وارد شوید"</string>
