@@ -223,11 +223,16 @@ public class MediaSessionHelperTest {
     }
 
     private void initializeMediaSessionHelper(boolean withValidSources) {
-        initializeMediaSessionHelper(withValidSources, null);
+        initializeMediaSessionHelper(withValidSources, null, /* ignoreBrowser= */ false);
     }
 
     private void initializeMediaSessionHelper(boolean withValidSources,
             MediaSessionHelper.SessionProvider sessionProvider) {
+        initializeMediaSessionHelper(withValidSources, sessionProvider, /* ignoreBrowser= */ false);
+    }
+
+    private void initializeMediaSessionHelper(boolean withValidSources,
+            MediaSessionHelper.SessionProvider sessionProvider, boolean ignoreBrowser) {
         MediaSessionHelper.InputFactory inputFactory = new MediaSessionHelper.InputFactory() {
             @Override
             public MediaSessionManager getMediaSessionManager(Context appContext) {
@@ -278,7 +283,7 @@ public class MediaSessionHelperTest {
                 };
 
         mMediaSessionHelper = new MediaSessionHelper(mContext, notificationProvider, inputFactory,
-                sessionProvider);
+                sessionProvider, ignoreBrowser);
     }
 
     @Test

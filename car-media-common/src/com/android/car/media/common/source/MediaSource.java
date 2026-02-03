@@ -113,22 +113,33 @@ public class MediaSource {
     @Nullable
     public static MediaSource create(@NonNull Context context,
             @NonNull MediaControllerCompat mediaController) {
-        String packageName = mediaController.getPackageName();
-        try {
-            ServiceInfo serviceInfo = null;
-            ComponentName componentName = getMediaControllerMBS(context, mediaController);
-            if (componentName != null) {
-                serviceInfo = getBrowseServiceInfo(context, componentName);
-                String className = serviceInfo != null ? serviceInfo.name : null;
-                if (TextUtils.isEmpty(className)) {
-                    serviceInfo = null;
-                }
-            }
+        return create(context, mediaController, /* ignoreBrowser= */ false);
+    }
 
+    /**
+     * Creates a {@link MediaSource} for the given {@link MediaControllerCompat}
+     */
+    @Nullable
+    public static MediaSource create(@NonNull Context context,
+            @NonNull MediaControllerCompat mediaController, boolean ignoreBrowser) {
+        String packageName = mediaController.getPackageName();
+
+        ComponentName componentName = getMediaControllerMBS(context, mediaController);
+        ServiceInfo serviceInfo = null;
+        if (componentName != null) {
+            serviceInfo = getBrowseServiceInfo(context, componentName);
+            String className = serviceInfo != null ? serviceInfo.name : null;
+            if (TextUtils.isEmpty(className)) {
+                serviceInfo = null;
+            }
+        }
+
+        try {
             CharSequence displayName = extractDisplayName(context, serviceInfo, packageName);
             Drawable icon = extractIcon(context, serviceInfo, packageName);
 
-            return new MediaSource(componentName, mediaController, packageName, displayName,
+            ComponentName browseService = ignoreBrowser ? null : componentName;
+            return new MediaSource(browseService, mediaController, packageName, displayName,
                     icon, new IconCropper(context), context.getPackageManager());
         } catch (NameNotFoundException e) {
             Log.w(TAG, "App not found " + packageName);

@@ -63,9 +63,17 @@ public class PlaybackCardViewModel extends AndroidViewModel {
 
     /** Initialize the PlaybackCardViewModel */
     public void init(MediaModels models) {
-        mContext = getApplication().getApplicationContext();
+        init(getApplication().getApplicationContext(), models);
+    }
+
+    /**
+     * Initialize the PlaybackCardViewModel with a specific context.
+     * This allows using a user-specific context instead of the application context.
+     */
+    public void init(Context context, MediaModels models) {
+        mContext = context;
         mModels = models;
-        mCarMediaManagerHelper = CarMediaManagerHelper.getInstance(getApplication());
+        mCarMediaManagerHelper = new CarMediaManagerHelper(context);
         // Use provided MediaSessionHelper if available
         mMediaSessionHelper = mModels.getMediaSessionHelper();
         if (mMediaSessionHelper != null) {
