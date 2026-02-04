@@ -62,6 +62,11 @@
         <attr name="oemColorBlueContainer" format="color" />
         <attr name="oemColorOnBlueContainer" format="color" />
 
+        <attr name="oemColorRed" format="color" />
+        <attr name="oemColorOnRed" format="color" />
+        <attr name="oemColorRedContainer" format="color" />
+        <attr name="oemColorOnRedContainer" format="color" />
+
         <attr name="oemColorGreen" format="color" />
         <attr name="oemColorOnGreen" format="color" />
         <attr name="oemColorGreenContainer" format="color" />
