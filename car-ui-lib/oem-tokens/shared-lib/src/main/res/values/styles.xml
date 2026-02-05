@@ -54,6 +54,10 @@
   <color name="color_on_blue">@android:color/holo_orange_dark</color>
   <color name="color_blue_container">@android:color/holo_orange_dark</color>
   <color name="color_on_blue_container">@android:color/holo_orange_dark</color>
+  <color name="color_red">@android:color/holo_orange_dark</color>
+  <color name="color_on_red">@android:color/holo_orange_dark</color>
+  <color name="color_red_container">@android:color/holo_orange_dark</color>
+  <color name="color_on_red_container">@android:color/holo_orange_dark</color>
   <color name="color_green">@android:color/holo_orange_dark</color>
   <color name="color_on_green">@android:color/holo_orange_dark</color>
   <color name="color_green_container">@android:color/holo_orange_dark</color>
@@ -110,6 +114,10 @@
     <item name="com.android.oem.tokens:colorOnBlue">@color/color_on_blue</item>
     <item name="com.android.oem.tokens:colorBlueContainer">@color/color_blue_container</item>
     <item name="com.android.oem.tokens:colorOnBlueContainer">@color/color_on_blue_container</item>
+    <item name="com.android.oem.tokens:colorRed">@color/color_red</item>
+    <item name="com.android.oem.tokens:colorOnRed">@color/color_on_red</item>
+    <item name="com.android.oem.tokens:colorRedContainer">@color/color_red_container</item>
+    <item name="com.android.oem.tokens:colorOnRedContainer">@color/color_on_red_container</item>
     <item name="com.android.oem.tokens:colorGreen">@color/color_green</item>
     <item name="com.android.oem.tokens:colorOnGreen">@color/color_on_green</item>
     <item name="com.android.oem.tokens:colorGreenContainer">@color/color_green_container</item>
