@@ -68,6 +68,7 @@ public class PlaybackCardController {
     protected final PlaybackViewModel mDataModel;
     protected final PlaybackCardViewModel mViewModel;
     protected final MediaItemsRepository mItemsRepository;
+    protected final Context mContext;
 
     protected View mMetaDataLoadingIndicator = null;
     protected TextView mTitle = null;
@@ -99,6 +100,7 @@ public class PlaybackCardController {
         mDataModel = builder.mDataModel;
         mViewModel = builder.mViewModel;
         mItemsRepository = builder.mItemsRepository;
+        mContext = builder.mContext != null ? builder.mContext : mView.getContext();
         mViewLifecycle = ViewTreeLifecycleOwner.get(mView);
     }
 
@@ -122,6 +124,7 @@ public class PlaybackCardController {
         private PlaybackViewModel mDataModel;
         private PlaybackCardViewModel mViewModel;
         private MediaItemsRepository mItemsRepository;
+        private Context mContext;
 
         /** Default constructor */
         public Builder() {}
@@ -140,6 +143,12 @@ public class PlaybackCardController {
         /** Used to set the {@link ViewGroup}.*/
         public Builder setViewGroup(ViewGroup view) {
             mView = view;
+            return this;
+        }
+
+        /** Used to set the {@link Context}. */
+        public Builder setContext(Context context) {
+            mContext = context;
             return this;
         }
 
@@ -185,7 +194,7 @@ public class PlaybackCardController {
         mSeekBar = mView.findViewById(R.id.playback_seek_bar);
 
         mPlayPauseButton = mView.findViewById(R.id.play_pause_button);
-        mActions = ViewUtils.getViewsById(mView, mView.getResources(),
+        mActions = ViewUtils.getViewsById(mView, mContext.getResources(),
                 R.array.playback_action_slot_ids, null);
         mQueueButton = mView.findViewById(R.id.queue_button);
         mHistoryButton = mView.findViewById(R.id.history_button);
@@ -197,7 +206,7 @@ public class PlaybackCardController {
      * {@link PlaybackViewModel}
      */
     private void setUpDataModelObservers() {
-        int max = mView.getContext().getResources().getInteger(
+        int max = mContext.getResources().getInteger(
                 R.integer.media_items_bitmap_max_size_px);
         mAlbumArtBinder = new ImageBinder<>(ImageBinder.PlaceholderType.FOREGROUND,
                 new Size(max, max), this::updateAlbumCoverWithDrawable);
@@ -330,7 +339,7 @@ public class PlaybackCardController {
     protected void updateMetadata(MediaItemMetadata metadata) {
         if (metadata != null) {
             ViewUtils.setVisible(mMetaDataLoadingIndicator, false);
-            String defaultTitle = mView.getContext().getString(
+            String defaultTitle = mContext.getString(
                     R.string.metadata_default_title);
             updateTextViewAndVisibility(mTitle, metadata.getTitle(), defaultTitle);
             updateTextViewAndVisibility(mSubtitle, metadata.getSubtitle());
@@ -345,9 +354,8 @@ public class PlaybackCardController {
             ViewUtils.setVisible(mSubtitle, false);
             ViewUtils.setVisible(mDescription, false);
             // Set current images to null
-            Context context = mView.getContext();
-            mAlbumArtBinder.setImage(context, /* newRef= */ null);
-            mLogoBinder.setImage(context, /* newRef= */ null);
+            mAlbumArtBinder.setImage(mContext, /* newRef= */ null);
+            mLogoBinder.setImage(mContext, /* newRef= */ null);
         }
     }
 
@@ -356,7 +364,7 @@ public class PlaybackCardController {
         MediaSource mediaSource =
                 mViewModel.getMediaSourceViewModel().getPrimaryMediaSource().getValue();
         if (mAlbumCover != null && artworkRef != null && mediaSource != null) {
-            mediaSource.loadImage(mAlbumArtBinder, mView.getContext(), artworkRef);
+            mediaSource.loadImage(mAlbumArtBinder, mContext, artworkRef);
         }
     }
 
@@ -366,7 +374,7 @@ public class PlaybackCardController {
                 mViewModel.getMediaSourceViewModel().getPrimaryMediaSource().getValue();
         if (mLogo != null && mediaSource != null) {
             Uri logoUri = mLogo.prepareToDisplay(metadata);
-            mediaSource.loadImage(mLogoBinder, mView.getContext(), new UriArtRef(logoUri));
+            mediaSource.loadImage(mLogoBinder, mContext, new UriArtRef(logoUri));
         }
     }
 
@@ -384,7 +392,7 @@ public class PlaybackCardController {
     protected void updateMediaSource(MediaSource mediaSource) {
         if (mediaSource != null) {
             updateImageViewDrawableAndVisibility(mAppIcon, mediaSource.getIcon());
-            updateTextViewAndVisibility(mAppName, mediaSource.getDisplayName(mView.getContext()));
+            updateTextViewAndVisibility(mAppName, mediaSource.getDisplayName(mContext));
         } else {
             ViewUtils.setVisible(mAppIcon, false);
             ViewUtils.setVisible(mAppName, false);
@@ -431,10 +439,10 @@ public class PlaybackCardController {
             PlaybackController playbackController =
                     mDataModel.getPlaybackController().getValue();
             updatePlayButtonWithPlaybackState(mPlayPauseButton, playbackState, playbackController);
-            updateActionsWithPlaybackState(mView.getContext(), mActions, playbackState,
+            updateActionsWithPlaybackState(mContext, mActions, playbackState,
                     mDataModel.getPlaybackController().getValue(),
-                    mView.getContext().getDrawable(R.drawable.ic_skip_previous),
-                    mView.getContext().getDrawable(R.drawable.ic_skip_next), null, null,
+                    mContext.getDrawable(R.drawable.ic_skip_previous),
+                    mContext.getDrawable(R.drawable.ic_skip_next), null, null,
                     false, null);
             updateSeekbarWithPlaybackState(mSeekBar, playbackState);
         }
