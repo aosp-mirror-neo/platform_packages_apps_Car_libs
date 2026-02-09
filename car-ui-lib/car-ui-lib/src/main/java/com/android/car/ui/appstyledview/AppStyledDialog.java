@@ -33,6 +33,7 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
+import android.widget.FrameLayout;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.OnBackPressedDispatcherOwner;
@@ -43,7 +44,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.lifecycle.Lifecycle;
@@ -57,8 +57,6 @@ import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
 
 import com.android.car.ui.R;
 import com.android.car.ui.utils.CarUiUtils;
-
-import java.util.List;
 
 /**
  * App styled dialog used to display a view that cannot be customized via OEM. Dialog will inflate a
@@ -75,17 +73,18 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     private static final int DIALOG_START_MARGIN_THRESHOLD = 120;
     private static final int DIALOG_MIN_PADDING = 32;
     private static final int IME_OVERLAP_DP = 32;
-    private View mContent;
     private final Context mContext;
     private final LifecycleRegistry mLifecycleRegistry;
     private final SavedStateRegistryController mSavedStateRegistryController;
     private final OnBackPressedDispatcher mOnBackPressedDispatcher;
-    private WindowManager.LayoutParams mBaseLayoutParams;
     @AppStyledDialogController.SceneType
     private int mSceneType;
+    // Track content padding
+    private int mOriginalContentPaddingBottom = -1;
+    private final FrameLayout mContentHolder;
 
     public AppStyledDialog(@NonNull Context context) {
-        super(context);
+        super(context, R.style.AppStyledDialogStyle);
         mLifecycleRegistry = new LifecycleRegistry(this);
         mSavedStateRegistryController = SavedStateRegistryController.create(this);
         mOnBackPressedDispatcher = new OnBackPressedDispatcher(super::onBackPressed);
@@ -94,20 +93,12 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         mContext = context;
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        mContentHolder = new FrameLayout(mContext);
+        super.setContentView(mContentHolder);
+
         Window window = getWindow();
         if (window == null) {
             return;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            mBaseLayoutParams = new WindowManager.LayoutParams();
-            mBaseLayoutParams.copyFrom(window.getAttributes());
-            int types =
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
-            mBaseLayoutParams.setFitInsetsTypes(types);
-        } else {
-            // #copyFrom() does not correctly copy params state in Android Q
-            mBaseLayoutParams = window.getAttributes();
         }
 
         updateAttributes();
@@ -130,7 +121,10 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             return;
         }
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
         copySystemUiVisibility();
         configureImeInsetFit();
         updateAttributes();
@@ -144,7 +138,47 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             return;
         }
 
-        window.setAttributes(getDialogWindowLayoutParam(mBaseLayoutParams));
+        WindowManager.LayoutParams windowParams = new WindowManager.LayoutParams();
+        getDialogWindowLayoutParam(windowParams);
+
+        FrameLayout.LayoutParams frameParams = new FrameLayout.LayoutParams(
+                windowParams.width,
+                windowParams.height
+        );
+        frameParams.gravity = windowParams.gravity;
+        frameParams.leftMargin = windowParams.x;
+        frameParams.topMargin = windowParams.y;
+
+        mContentHolder.setLayoutParams(frameParams);
+        if (mOriginalContentPaddingBottom != -1) {
+            mContentHolder.getChildAt(0).setPadding(
+                    mContentHolder.getPaddingLeft(),
+                    mContentHolder.getPaddingTop(),
+                    mContentHolder.getPaddingRight(),
+                    mOriginalContentPaddingBottom);
+
+        }
+
+        WindowManager.LayoutParams params = window.getAttributes();
+        switch (mSceneType) {
+            case AppStyledDialogController.SceneType.ENTER:
+                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Enter;
+                break;
+            case AppStyledDialogController.SceneType.EXIT:
+                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Exit;
+                break;
+            case AppStyledDialogController.SceneType.INTERMEDIATE:
+                params.windowAnimations =
+                        R.style.Widget_CarUi_AppStyledView_WindowAnimations_Intermediate;
+                break;
+            case AppStyledDialogController.SceneType.SINGLE:
+            default:
+                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations;
+                break;
+        }
+        params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
+                R.dimen.car_ui_app_styled_dialog_dim_amount);
+        window.setAttributes(params);
     }
 
     @SuppressLint("NewApi")
@@ -152,32 +186,35 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
-        // Inset API not supported before Android R. Fallback to approximation
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
-            WindowInsets windowInsets =
-                    unwrappedContext.getSystemService(
-                            WindowManager.class).getCurrentWindowMetrics().getWindowInsets();
-            android.graphics.Insets insets = windowInsets.getInsets(insetType);
+        WindowInsets windowInsets = null;
 
+        if (mContentHolder != null && mContentHolder.getRootWindowInsets() != null) {
+            windowInsets = mContentHolder.getRootWindowInsets();
+        } else {
+            Activity activity = CarUiUtils.getActivity(mContext);
+            if (activity != null && activity.getWindow() != null) {
+                windowInsets =
+                        activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
+            }
+        }
+
+        if (windowInsets != null) {
+            Insets insets =
+                    WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
             return insets.top + insets.bottom;
         }
 
-        float fallbackInset =
-                (float) (getWindowBounds().height() * (1 - VISIBLE_SCREEN_PERCENTAGE));
-        Activity activity = CarUiUtils.getActivity(mContext);
-        if (activity == null) {
-            return fallbackInset;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
+            WindowInsets metricsInsets = unwrappedContext.getSystemService(WindowManager.class)
+                    .getCurrentWindowMetrics()
+                    .getWindowInsets();
+            android.graphics.Insets insets = metricsInsets.getInsets(insetType);
+            return insets.top + insets.bottom;
         }
 
-        WindowInsets windowInsets =
-                activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
-        if (windowInsets == null) {
-            return fallbackInset;
-        }
-
-        Insets insets = WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
-        return insets.top + insets.bottom;
+        // fallback
+        return (float) (getWindowBounds().height() * (1 - VISIBLE_SCREEN_PERCENTAGE));
     }
 
     @SuppressLint("NewApi")
@@ -185,31 +222,35 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int insetType =
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
-        // Inset API not supported before Android R. Fallback to approximation
+        WindowInsets windowInsets = null;
+
+        if (mContentHolder != null && mContentHolder.getRootWindowInsets() != null) {
+            windowInsets = mContentHolder.getRootWindowInsets();
+        } else {
+            Activity activity = CarUiUtils.getActivity(mContext);
+            if (activity != null && activity.getWindow() != null) {
+                windowInsets =
+                        activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
+            }
+        }
+
+        if (windowInsets != null) {
+            Insets insets =
+                    WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
+            return insets.left + insets.right;
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             Context unwrappedContext = CarUiUtils.unwrapContext(mContext);
-            WindowInsets windowInsets = unwrappedContext.getSystemService(
+            WindowInsets metricsInsets = unwrappedContext.getSystemService(
                     WindowManager.class).getCurrentWindowMetrics().getWindowInsets();
-            android.graphics.Insets insets = windowInsets.getInsets(insetType);
+            android.graphics.Insets insets = metricsInsets.getInsets(insetType);
 
             return insets.left + insets.right;
         }
 
-        float fallbackInset =
-                (float) (getWindowBounds().width() * (1 - VISIBLE_SCREEN_PERCENTAGE));
-        Activity activity = CarUiUtils.getActivity(mContext);
-        if (activity == null) {
-            return fallbackInset;
-        }
-
-        WindowInsets windowInsets =
-                activity.getWindow().getDecorView().getRootView().getRootWindowInsets();
-        if (windowInsets == null) {
-            return fallbackInset;
-        }
-
-        Insets insets = WindowInsetsCompat.toWindowInsetsCompat(windowInsets).getInsets(insetType);
-        return insets.left + insets.right;
+        // fallback
+        return (float) (getWindowBounds().width() * (1 - VISIBLE_SCREEN_PERCENTAGE));
     }
 
     private Rect getWindowBounds() {
@@ -257,26 +298,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             params.height = windowHeight;
         }
 
-        params.dimAmount = CarUiUtils.getFloat(mContext.getResources(),
-                R.dimen.car_ui_app_styled_dialog_dim_amount);
-        params.flags = params.flags | WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-
-        switch (mSceneType) {
-            case AppStyledDialogController.SceneType.ENTER:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Enter;
-                break;
-            case AppStyledDialogController.SceneType.EXIT:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations_Exit;
-                break;
-            case AppStyledDialogController.SceneType.INTERMEDIATE:
-                params.windowAnimations =
-                        R.style.Widget_CarUi_AppStyledView_WindowAnimations_Intermediate;
-                break;
-            case AppStyledDialogController.SceneType.SINGLE:
-            default:
-                params.windowAnimations = R.style.Widget_CarUi_AppStyledView_WindowAnimations;
-                break;
-        }
 
         int posX = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_position_x);
@@ -286,16 +307,6 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         if (posX + params.width > windowWidth || posY + params.height > windowHeight) {
             posX = 0;
             posY = 0;
-        }
-
-        if (posX != 0 || posY != 0) {
-            params.gravity = Gravity.TOP | Gravity.START;
-            params.x = posX;
-            params.y = posY;
-            return params;
-        } else {
-            params.x = 0;
-            params.y = 0;
         }
 
         int minPaddingPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
@@ -309,6 +320,16 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             params.height = windowHeight - verticalInset - (minPaddingPx * 2);
         }
 
+        params.gravity = Gravity.TOP | Gravity.START;
+        if (posX != 0 || posY != 0) {
+            params.x = posX;
+            params.y = posY;
+            return params;
+        } else {
+            params.x = ((windowWidth - horizontalInset) - params.width) / 2;
+            params.y = ((windowHeight - verticalInset) - params.height) / 2;
+        }
+
         int startMarginThresholdPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
                 DIALOG_START_MARGIN_THRESHOLD);
         boolean isLandscape = mContext.getResources().getConfiguration().orientation
@@ -316,10 +337,7 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
         int startMargin = (windowWidth - horizontalInset - params.width) / 2;
 
         if (isLandscape && startMargin > startMarginThresholdPx) {
-            params.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
             params.x = startMarginThresholdPx;
-        } else {
-            params.gravity = Gravity.CENTER;
         }
 
         return params;
@@ -350,193 +368,89 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
         }
 
-        ViewCompat.setWindowInsetsAnimationCallback(window.getDecorView().getRootView(),
-                new WindowInsetsAnimationCompat.Callback(
-                        WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP) {
+        // Handle final state for IME resizing as animation callbacks are best effort and are not
+        // guaranteed to be called.
+        ViewCompat.setOnApplyWindowInsetsListener(window.getDecorView().getRootView(),
+                (v, insets) -> {
 
-                    int mEndHeight;
-                    int mStartHeight;
-                    WindowManager.LayoutParams mAnimationLayoutParams;
-                    int mContentBottomPadding;
-                    boolean mIsImeShownWithResize;
-                    final int mImeOverlapPx =
-                            (int) CarUiUtils.dpToPixel(mContext.getResources(), IME_OVERLAP_DP);
-                    int mSystemBarBottom;
-                    int mImeHeight;
+                    Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+                    int imeHeight = imeInsets.bottom;
 
-                    private boolean isImeAnimation(WindowInsetsAnimationCompat animation) {
-                        return (animation.getTypeMask() & WindowInsetsCompat.Type.ime()) != 0;
-                    }
-
-                    private int getSystemBarBottomHeight() {
-                        Activity activity = CarUiUtils.getActivity(mContext);
-                        if (activity != null) {
-                            WindowInsetsCompat activityInsets =
-                                    ViewCompat.getRootWindowInsets(
-                                            activity.getWindow().getDecorView()
-                                                    .getRootView());
-                            return activityInsets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()).bottom;
-                        }
-
-                        return 0;
-                    }
-
-                    @Override
-                    @SuppressLint({"NewApi", "RtlHardcoded"})
-                    public void onPrepare(@NonNull WindowInsetsAnimationCompat animation) {
-                        if (!isImeAnimation(animation)) {
-                            return;
-                        }
-
-                        mSystemBarBottom = getSystemBarBottomHeight();
-
-                        window.setSoftInputMode(
-                                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-
-                        mAnimationLayoutParams = new WindowManager.LayoutParams();
-                        mAnimationLayoutParams.copyFrom(window.getAttributes());
-                        mStartHeight = mAnimationLayoutParams.height;
-
-                        int[] location = new int[2];
-                        window.getDecorView().getRootView().getLocationOnScreen(location);
-                        int x = location[0];
-                        int y = location[1];
-
-                        Rect bounds = getWindowBounds();
-                        int windowOffsetX = bounds.left;
-                        int windowOffsetY = bounds.top;
-
-                        mAnimationLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;
-                        mAnimationLayoutParams.setFitInsetsTypes(0);
-                        mAnimationLayoutParams.layoutInDisplayCutoutMode =
-                                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                        mAnimationLayoutParams.x = x - windowOffsetX;
-                        mAnimationLayoutParams.y = y - windowOffsetY;
-                        window.setAttributes(mAnimationLayoutParams);
-
-                        mContentBottomPadding = mContent.getPaddingBottom();
-                    }
-
-                    @NonNull
-                    @Override
-                    public WindowInsetsAnimationCompat.BoundsCompat onStart(
-                            @NonNull WindowInsetsAnimationCompat animation,
-                            @NonNull WindowInsetsAnimationCompat.BoundsCompat bounds) {
-                        if (!isImeAnimation(animation)) {
-                            return bounds;
-                        }
-                        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(
-                                window.getDecorView().getRootView());
-                        mIsImeShownWithResize = insets.getInsets(WindowInsetsCompat.Type.ime())
-                                != Insets.NONE;
-                        mImeHeight = bounds.getUpperBound().bottom;
-
-                        // Workaround Android R issue where animation bounds incorrectly
-                        // includes system bar inset
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S_V2) {
-                            mImeHeight = bounds.getUpperBound().bottom - mSystemBarBottom;
-                        }
-                        int resize = 0;
-                        if (mIsImeShownWithResize) {
-                            resize = calculateDialogResize();
-                        }
-
-                        mEndHeight = mStartHeight - resize;
-                        return bounds;
-                    }
-
-                    private int calculateDialogResize() {
-                        int resize = 0;
-
-                        int[] location = new int[2];
-                        window.getDecorView().getRootView().getLocationOnScreen(location);
-                        // Makes assumption that ime is shown on bottom of screen
-                        int bottom = location[1] + mStartHeight;
-
-                        int imeTop = getWindowBounds().bottom - mImeHeight;
-                        if (imeTop < bottom) {
-                            resize = bottom - imeTop - mImeOverlapPx;
-                        }
-
-                        return resize;
-                    }
-
-                    @NonNull
-                    @Override
-                    public WindowInsetsCompat onProgress(@NonNull WindowInsetsCompat insets,
-                            @NonNull List<WindowInsetsAnimationCompat> runningAnimations) {
-                        // Find an IME animation.
-                        WindowInsetsAnimationCompat imeAnimation = null;
-                        for (WindowInsetsAnimationCompat animation : runningAnimations) {
-                            if (isImeAnimation(animation)) {
-                                imeAnimation = animation;
-                                break;
-                            }
-                        }
-                        if (imeAnimation != null) {
-                            // Offset the view based on the interpolated fraction of the IME
-                            // animation.
-                            mAnimationLayoutParams.height =
-                                    (int) (mStartHeight - ((mStartHeight - mEndHeight)
-                                            * imeAnimation.getInterpolatedFraction()));
-                            window.setAttributes(mAnimationLayoutParams);
-                            float imeOffset = mIsImeShownWithResize ? mImeOverlapPx
-                                    * imeAnimation.getInterpolatedFraction()
-                                    : -mImeOverlapPx * imeAnimation.getInterpolatedFraction();
-
-                            Object tag = mContent.getTag(R.id.car_ui_app_styled_content);
-                            boolean isOverlapPadded = tag == null ? false : (boolean) tag;
-                            if (!(isOverlapPadded && mIsImeShownWithResize)) {
-                                mContent.setPadding(mContent.getPaddingLeft(),
-                                        mContent.getPaddingTop(),
-                                        mContent.getPaddingRight(),
-                                        (int) (mContentBottomPadding + imeOffset));
-
-                            }
-                        }
-
+                    if (imeHeight <= 0) {
+                        updateAttributes();
                         return insets;
                     }
 
-                    @Override
-                    public void onEnd(@NonNull WindowInsetsAnimationCompat animation) {
-                        boolean isSystemBarAnimation =
-                                (animation.getTypeMask() & WindowInsetsCompat.Type.systemBars())
-                                        != 0;
-
-                        if (!mIsImeShownWithResize || isSystemBarAnimation) {
-                            updateAttributes();
-                        }
-
-                        // If dialog is resized it should always be larger than the visible rect.
-                        // If it is not, platform returned incorrect IME sizing (common issue
-                        // when system bars are shown)
-                        if (mIsImeShownWithResize) {
-                            mContent.setTag(R.id.car_ui_app_styled_content, true);
-                            Rect r = new Rect();
-                            Activity activity = CarUiUtils.getActivity(mContext);
-                            if (activity != null) {
-                                activity.getWindow().getDecorView().getRootView()
-                                        .getWindowVisibleDisplayFrame(r);
-                                int dialogHeight = getWindow().getAttributes().height;
-                                int visibleFrameHeight = r.height();
-
-                                if (dialogHeight < visibleFrameHeight) {
-                                    mImeHeight = mImeHeight - mSystemBarBottom;
-
-                                    getWindow().getAttributes().height =
-                                            mStartHeight - calculateDialogResize();
-                                    window.setAttributes(window.getAttributes());
-                                }
-                            }
-                        } else {
-                            mContent.setTag(R.id.car_ui_app_styled_content, false);
-                        }
-
-                        super.onEnd(animation);
+                    // Fix for Android R/S system bar inclusion
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S_V2) {
+                        imeHeight -= getSystemBarBottomHeight();
                     }
+
+                    int currentHeight = mContentHolder.getMeasuredHeight();
+                    int targetResize = calculateImeResize(currentHeight, imeHeight);
+
+                    // Apply logic with progress as 1.0 (100% complete)
+                    applyImeResize(currentHeight, targetResize, 1.0f);
+
+                    return new WindowInsetsCompat.Builder(insets)
+                            .setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE)
+                            .build();
                 });
+    }
+
+    private int calculateImeResize(int startHeight, int imeHeight) {
+        if (imeHeight <= 0) {
+            return 0;
+        }
+
+        int imeOverlapPx = (int) CarUiUtils.dpToPixel(mContext.getResources(), IME_OVERLAP_DP);
+
+        int[] contentLocation = new int[2];
+        mContentHolder.getLocationOnScreen(contentLocation);
+
+        int[] windowLocation = new int[2];
+        mContentHolder.getRootView().getLocationOnScreen(windowLocation);
+
+        // Makes assumption that ime is shown on bottom of screen
+        int dialogBottom = contentLocation[1] + startHeight;
+        int imeTop = windowLocation[1] + getWindowBounds().height() - imeHeight;
+
+        if (imeTop < dialogBottom) {
+            return Math.max(0, dialogBottom - imeTop - imeOverlapPx);
+        }
+        return 0;
+    }
+
+    private void applyImeResize(int startHeight, int targetResize, float progress) {
+        int currentResize = (int) (targetResize * progress);
+        ViewGroup.LayoutParams params = mContentHolder.getLayoutParams();
+        params.height = startHeight - currentResize;
+        mContentHolder.setLayoutParams(params);
+
+        // If resizing, add padding to the content to push elements up above overlap
+        if (mOriginalContentPaddingBottom != -1) {
+            int imeOverlapPx = (int) CarUiUtils.dpToPixel(mContext.getResources(), IME_OVERLAP_DP);
+            int extraPadding = targetResize > 0 ? (int) (imeOverlapPx * progress) : 0;
+
+            mContentHolder.getChildAt(0).setPadding(
+                    mContentHolder.getPaddingLeft(),
+                    mContentHolder.getPaddingTop(),
+                    mContentHolder.getPaddingRight(),
+                    mOriginalContentPaddingBottom + extraPadding
+            );
+        }
+    }
+
+    private int getSystemBarBottomHeight() {
+        Activity activity = CarUiUtils.getActivity(mContext);
+        if (activity != null) {
+            WindowInsetsCompat activityInsets = ViewCompat.getRootWindowInsets(
+                    activity.getWindow().getDecorView().getRootView());
+            if (activityInsets != null) {
+                return activityInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            }
+        }
+        return 0;
     }
 
     @Override
@@ -633,6 +547,11 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
             return;
         }
 
+        // Don't show when no content view set.
+        if (mContentHolder.getChildCount() == 0) {
+            return;
+        }
+
         super.show();
         View focusedView = getCurrentFocus();
         if (focusedView != null) {
@@ -643,24 +562,30 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
     @Override
     public void setContentView(@NonNull View view) {
         initViewTreeOwners();
-        mContent = view;
-        super.setContentView(view);
+        mContentHolder.removeAllViews();
+        mContentHolder.addView(
+                view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        mOriginalContentPaddingBottom = view.getPaddingBottom();
     }
 
     @Override
     public void setContentView(@NonNull View view, @Nullable ViewGroup.LayoutParams params) {
         initViewTreeOwners();
-        super.setContentView(view, params);
+        mContentHolder.removeAllViews();
+        mContentHolder.addView(view, params);
+
+        mOriginalContentPaddingBottom = view.getPaddingBottom();
     }
 
     @Override
     public void addContentView(@NonNull View view, @Nullable ViewGroup.LayoutParams params) {
-        initViewTreeOwners();
-        super.addContentView(view, params);
+        setContentView(view, params);
     }
 
     public void setSceneType(int sceneType) {
         mSceneType = sceneType;
+        updateAttributes();
     }
 
     @Nullable

@@ -112,8 +112,8 @@ public class TokenActivity extends Activity {
         mColorPreview = requireViewById(R.id.color_preview);
         mSeekBar = requireViewById(R.id.color_seekbar);
 
-        mIsLightMode = isLightMode(Token.getColor(this, R.attr.oemColorBackground),
-                Token.getColor(this, R.attr.oemColorOnBackground));
+        mIsLightMode = isLightMode(Token.getColor(this, R.attr.oemColorSurface),
+                Token.getColor(this, R.attr.oemColorOnSurface));
         lightSwitch.setChecked(mIsLightMode);
         lightSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mIsLightMode = isChecked);
 
@@ -540,8 +540,6 @@ public class TokenActivity extends Activity {
         list.add(new Pair<>("colorErrorOnContainer",
                 R.attr.oemColorOnErrorContainer));
 
-        list.add(new Pair<>("colorBackground", R.attr.oemColorBackground));
-        list.add(new Pair<>("colorOnBackground", R.attr.oemColorOnBackground));
         list.add(new Pair<>("colorSurface", R.attr.oemColorSurface));
         list.add(new Pair<>("colorOnSurface", R.attr.oemColorOnSurface));
         list.add(new Pair<>("colorSurfaceVariant", R.attr.oemColorSurfaceVariant));

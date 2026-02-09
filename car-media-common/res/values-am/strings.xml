@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"የአልበም ስነ ጥበብ"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"ርዕስ የለም"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$sን ክፈት"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"የሆነ ችግር አለ። በኋላ ይሞክሩ።"</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"የሆነ ችግር አለ። በኋላ ይሞክሩ።"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"አሁን ይህን ማድረግ አይቻልም"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ይህ መተግበሪያ ይህን ማድረግ አይችልም"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ይህን መተግበሪያ ለመጠቀም በመለያ ይግቡ"</string>

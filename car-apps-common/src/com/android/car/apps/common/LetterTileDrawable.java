@@ -86,8 +86,9 @@ public class LetterTileDrawable extends Drawable {
         setScale(0.7f);
 
         if (sColors == null) {
-            sDefaultColor = res.getColor(R.color.letter_tile_default_color, null /* theme */);
-            TypedArray ta = res.obtainTypedArray(R.array.letter_tile_colors);
+            sDefaultColor = res.getColor(R.color.car_apps_letter_tile_default_color,
+                    null /* theme */);
+            TypedArray ta = res.obtainTypedArray(R.array.car_apps_letter_tile_colors);
             if (ta.length() == 0) {
                 // TODO(dnotario). Looks like robolectric shadow doesn't currently support
                 // obtainTypedArray and always returns length 0 array, which will make some code
@@ -103,7 +104,8 @@ public class LetterTileDrawable extends Drawable {
                 ta.recycle();
             }
 
-            sTileFontColor = res.getColor(R.color.letter_tile_font_color, null /* theme */);
+            sTileFontColor = res.getColor(R.color.car_apps_letter_tile_font_color,
+                    null /* theme */);
             sLetterToTileRatio = res.getFraction(R.fraction.letter_to_tile_ratio, 1, 1);
             // TODO: get images for business and voicemail
             sDefaultPersonAvatar = res.getDrawable(R.drawable.ic_person, null /* theme */);

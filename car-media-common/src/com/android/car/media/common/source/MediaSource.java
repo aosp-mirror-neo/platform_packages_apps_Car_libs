@@ -62,6 +62,8 @@ public class MediaSource {
     private static final String TAG = "MediaSource";
     @VisibleForTesting
     static final String ANDROIDX_CAR_APP_LAUNCHABLE = "androidx.car.app.launchable";
+    // String Action used in CAL to signify to media apps that the PBV Template should be opened
+    static final String SHOW_MEDIA_PLAYBACK = "androidx.car.app.media.action.SHOW_MEDIA_PLAYBACK";
 
     private static List<String> sCustomMediaComponents;
     @Nullable
@@ -336,12 +338,42 @@ public class MediaSource {
 
     /**
      *  Returns the intent to open a provided MediaSource, or null if not available
+     * @deprecated Prefer {@link #launchActivity } so that a PendingIntent or
+     * the SHOW_PLAYBACK_VIEW Intent can be passed to the application, if supported
      */
     @Nullable
     public Intent getIntent() {
         // Only intent to a templated app with mbs
         if (mBrowseService == null) {
             return createMediaSessionIntent();
+        }
+
+        Intent intent = new Intent(CarMediaIntents.ACTION_MEDIA_TEMPLATE);
+        intent.putExtra(EXTRA_MEDIA_COMPONENT, mBrowseService.flattenToString());
+
+        return intent;
+    }
+
+    /**
+     *  Returns the intent to open a provided MediaSource, or null if not available.
+     *  Optionally passes the SHOW_PLAYBACK_VIEW action if the app supports it
+     */
+    @Nullable
+    private Intent createMediaAppIntent(Context context) {
+        if (mBrowseService == null) {
+            Intent mediaSessionIntent = createMediaSessionIntent();
+            if (mediaSessionIntent == null) {
+                return null;
+            }
+            Intent intent = new Intent(SHOW_MEDIA_PLAYBACK);
+            intent.setComponent(mediaSessionIntent.getComponent());
+            ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent,
+                    /* flags */ 0);
+            if (resolveInfo != null) {
+                return intent;
+            } else {
+                return mediaSessionIntent;
+            }
         }
 
         Intent intent = new Intent(CarMediaIntents.ACTION_MEDIA_TEMPLATE);
@@ -384,7 +416,7 @@ public class MediaSource {
                 Log.e(TAG, "Exception trying to launch PendingIntent " + e);
             }
         } else {
-            Intent intent = getIntent();
+            Intent intent = createMediaAppIntent(context);
             if (intent != null) {
                 Log.i(TAG, "Launching intent " + intent);
                 context.startActivity(getIntent(), activityOptions.toBundle());

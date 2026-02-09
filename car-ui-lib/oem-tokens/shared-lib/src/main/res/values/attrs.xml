@@ -14,8 +14,6 @@
  limitations under the License.
 -->
 <resources>
-    <attr name="colorOemSeed" format="color" />
-
     <!-- Primary color palette -->
     <attr name="colorPrimary" format="color" />
     <attr name="colorOnPrimary" format="color" />
@@ -60,8 +58,6 @@
     <attr name="colorOnYellowContainer" format="color" />
 
     <!-- Neutral color palette -->
-    <attr name="colorBackground" format="color" />
-    <attr name="colorOnBackground" format="color" />
     <attr name="colorSurface" format="color" />
     <attr name="colorOnSurface" format="color" />
     <attr name="colorSurfaceVariant" format="color" />

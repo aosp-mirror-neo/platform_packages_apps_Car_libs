@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"अल्बम कला"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"शीर्षक नाही"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s उघडा"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"काहीतरी चूक झाली. नंतर प्रयत्न करा."</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"काहीतरी चुकले. नंतर प्रयत्न करा."</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"ते आता करू शकत नाही"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"हे ॲप ते करू शकत नाही"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"हे ॲप वापरण्यासाठी साइन इन करा"</string>

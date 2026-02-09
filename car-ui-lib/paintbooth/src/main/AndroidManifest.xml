@@ -70,8 +70,18 @@
     <activity
         android:name=".appstyledview.AppStyledViewSampleActivity"
         android:exported="false"
-        android:configChanges="orientation"
-        android:parentActivityName=".MainActivity"/>
+        android:parentActivityName=".MainActivity">
+    </activity>
+    <activity
+            android:name=".appstyledview.AppStyledViewSampleActivity$ActivitySample"
+            android:taskAffinity="com.android.car.ui.paintbooth.new_task_affinity"
+            android:exported="true"
+            android:parentActivityName=".MainActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.APP_STYLED_VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
     <activity
         android:name=".appstyledview.TransparentActivity"
         android:exported="false"

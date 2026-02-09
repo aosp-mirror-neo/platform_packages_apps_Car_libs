@@ -20,7 +20,7 @@
     <string name="album_art" msgid="3392647029019061691">"ਐਲਬਮ ਕਲਾ"</string>
     <string name="metadata_default_title" msgid="5902775732281325081">"ਕੋਈ ਸਿਰਲੇਖ ਨਹੀਂ"</string>
     <string name="open_action_for_app_title" msgid="8479719373932210540">"%1$s ਖੋਲ੍ਹੋ"</string>
-    <string name="default_error_message" msgid="4044331619453864482">"ਕੋਈ ਗੜਬੜ ਹੈ। ਬਾਅਦ ਵਿੱਚ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
+    <string name="default_playback_error_message" msgid="7379928364961557633">"ਕੋਈ ਗੜਬੜ ਹੈ। ਬਾਅਦ ਵਿੱਚ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
     <string name="error_code_app_error" msgid="3608680401453743688">"ਫਿਲਹਾਲ ਇਹ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="error_code_not_supported" msgid="8004310657548193089">"ਇਹ ਐਪ ਇਹ ਨਹੀਂ ਕਰ ਸਕਦੀ"</string>
     <string name="error_code_authentication_expired" msgid="1727285213286610186">"ਇਸ ਐਪ ਨੂੰ ਵਰਤਣ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ"</string>

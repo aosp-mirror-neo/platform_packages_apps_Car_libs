@@ -82,7 +82,7 @@ public class CarUiListItemAdapterAdapterProxyV2 implements
 
     @Override
     public void notifyItemRangeChanged(int positionStart, int itemCount) {
-        for (int i = positionStart; i <= positionStart + itemCount; i++) {
+        for (int i = positionStart; i < positionStart + itemCount; i++) {
             mStaticItems.set(i, ListItemUtils.toStaticListItem(mItems.get(i)));
         }
         mDelegateAdapter.notifyItemRangeChanged(positionStart, itemCount);
@@ -90,7 +90,7 @@ public class CarUiListItemAdapterAdapterProxyV2 implements
 
     @Override
     public void notifyItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-        for (int i = positionStart; i <= positionStart + itemCount; i++) {
+        for (int i = positionStart; i < positionStart + itemCount; i++) {
             mStaticItems.set(i, ListItemUtils.toStaticListItem(mItems.get(i)));
         }
         mDelegateAdapter.notifyItemRangeChanged(positionStart, itemCount, payload);
@@ -98,16 +98,17 @@ public class CarUiListItemAdapterAdapterProxyV2 implements
 
     @Override
     public void notifyItemRangeInserted(int positionStart, int itemCount) {
-        for (int i = positionStart; i <= positionStart + itemCount; i++) {
-            mStaticItems.add(i, ListItemUtils.toStaticListItem(mItems.get(i)));
+        for (int i = 0; i < itemCount; i++) {
+            mStaticItems.add(positionStart + i,
+                    ListItemUtils.toStaticListItem(mItems.get(positionStart + i)));
         }
         mDelegateAdapter.notifyItemRangeInserted(positionStart, itemCount);
     }
 
     @Override
     public void notifyItemRangeRemoved(int positionStart, int itemCount) {
-        for (int i = positionStart; i <= positionStart + itemCount; i++) {
-            mStaticItems.remove(i);
+        for (int i = 0; i < itemCount; i++) {
+            mStaticItems.remove(positionStart);
         }
         mDelegateAdapter.notifyItemRangeRemoved(positionStart, itemCount);
     }
@@ -263,9 +264,17 @@ public class CarUiListItemAdapterAdapterProxyV2 implements
 
                 @Override
                 public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                    for (AdapterDataObserverOEMV1 observer : mAdapterDataObservers) {
+                    if (fromPosition < toPosition) {
+                        for (int i = itemCount - 1; i >= 0; i--) {
+                            for (AdapterDataObserverOEMV1 observer : mAdapterDataObservers) {
+                                observer.onItemMoved(fromPosition + i, toPosition + i);
+                            }
+                        }
+                    } else {
                         for (int i = 0; i < itemCount; i++) {
-                            observer.onItemMoved(fromPosition + i, toPosition + i);
+                            for (AdapterDataObserverOEMV1 observer : mAdapterDataObservers) {
+                                observer.onItemMoved(fromPosition + i, toPosition + i);
+                            }
                         }
                     }
                 }

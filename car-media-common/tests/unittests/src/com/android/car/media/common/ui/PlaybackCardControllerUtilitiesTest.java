@@ -40,6 +40,7 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import androidx.annotation.ColorInt;
+import androidx.core.graphics.drawable.IconCompat;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -99,6 +100,13 @@ public class PlaybackCardControllerUtilitiesTest {
     public Drawable mCustomDrawable3;
 
     @Mock
+    public IconCompat mCustomIconCompat1;
+    @Mock
+    public IconCompat mCustomIconCompat2;
+    @Mock
+    public IconCompat mCustomIconCompat3;
+
+    @Mock
     public PlaybackController mPlaybackController;
 
     private Context mContext;
@@ -120,13 +128,21 @@ public class PlaybackCardControllerUtilitiesTest {
                 mButton6);
 
         mCustomActionList = Arrays.asList(mRawCustomAction1, mRawCustomAction2, mRawCustomAction3);
-
-        when(mRawCustomAction1.fetchDrawable(mContext)).thenReturn(new CustomPlaybackAction(
-                mCustomDrawable1, CUSTOM_ACTION_STRING, null));
-        when(mRawCustomAction2.fetchDrawable(mContext)).thenReturn(new CustomPlaybackAction(
-                mCustomDrawable2, CUSTOM_ACTION_STRING, null));
-        when(mRawCustomAction3.fetchDrawable(mContext)).thenReturn(new CustomPlaybackAction(
-                mCustomDrawable3, CUSTOM_ACTION_STRING, null));
+        when(mCustomIconCompat1.loadDrawable(mContext)).thenReturn(mCustomDrawable1);
+        when(mCustomIconCompat2.loadDrawable(mContext)).thenReturn(mCustomDrawable2);
+        when(mCustomIconCompat3.loadDrawable(mContext)).thenReturn(mCustomDrawable3);
+        CustomPlaybackAction action1 = CustomPlaybackAction.create(
+                mContext, CUSTOM_ACTION_STRING, /* extras */ null,
+                /* iconCompat */ mCustomIconCompat1);
+        CustomPlaybackAction action2 = CustomPlaybackAction.create(
+                mContext, CUSTOM_ACTION_STRING, /* extras */ null,
+                /* iconCompat */ mCustomIconCompat2);
+        CustomPlaybackAction action3 = CustomPlaybackAction.create(
+                mContext, CUSTOM_ACTION_STRING, /* extras */ null,
+                /* iconCompat */ mCustomIconCompat3);
+        when(mRawCustomAction1.fetchDrawable(mContext)).thenReturn(action1);
+        when(mRawCustomAction2.fetchDrawable(mContext)).thenReturn(action2);
+        when(mRawCustomAction3.fetchDrawable(mContext)).thenReturn(action3);
 
         when(mStateWrapper.getCustomActions()).thenReturn(mCustomActionList);
     }

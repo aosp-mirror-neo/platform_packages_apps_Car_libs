@@ -174,7 +174,7 @@ public class CarUxRestrictionsUtil {
 
                         @Override
                         public void onActivityDestroyed(@NonNull Activity activity) {
-                            CarUxRestrictionsUtil util = sContextToUtilMap.get(activity);
+                            CarUxRestrictionsUtil util = sContextToUtilMap.remove(activity);
                             if (util != null && util.mCar != null) {
                                 util.mCar.disconnect();
                             }
