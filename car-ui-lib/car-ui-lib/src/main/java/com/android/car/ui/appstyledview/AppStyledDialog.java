@@ -285,57 +285,66 @@ public class AppStyledDialog extends Dialog implements LifecycleOwner, SavedStat
                 R.dimen.car_ui_app_styled_dialog_width);
         int configuredHeight = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_height);
-
-        params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
-        params.height = configuredHeight != 0 ? configuredHeight
-                : Math.min(windowHeight, maxHeight);
-
-        if (configuredWidth > windowWidth) {
-            params.width = windowWidth;
-        }
-
-        if (configuredHeight > windowHeight) {
-            params.height = windowHeight;
-        }
-
-
         int posX = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_position_x);
         int posY = mContext.getResources().getDimensionPixelSize(
                 R.dimen.car_ui_app_styled_dialog_position_y);
+        int minPaddingPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
+                DIALOG_MIN_PADDING);
+        int startMarginThresholdPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
+                DIALOG_START_MARGIN_THRESHOLD);
+        boolean isLandscape = mContext.getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
 
-        if (posX + params.width > windowWidth || posY + params.height > windowHeight) {
+        // Set the size based on configured size, available size, or max size.
+        params.width = configuredWidth != 0 ? configuredWidth : Math.min(windowWidth, maxWidth);
+        params.height = configuredHeight != 0 ? configuredHeight
+                : Math.min(windowHeight, maxHeight);
+
+        // Make sure the dialog is not larger than the window.
+        if (configuredWidth > windowWidth) {
+            params.width = windowWidth;
+        }
+        if (configuredHeight > windowHeight) {
+            params.height = windowHeight;
+        }
+
+        // Make sure the dialog is not larger than the window with insets and min padding.
+        if (params.width + horizontalInset > windowWidth - (minPaddingPx * 2)) {
+            params.width = windowWidth - horizontalInset - (minPaddingPx * 2);
+        }
+        if (params.height + verticalInset > windowHeight - (minPaddingPx * 2)) {
+            params.height = windowHeight - verticalInset - (minPaddingPx * 2);
+        }
+
+        // If positions are provided, make sure they are within the window, otherwise set them to 0.
+        boolean isPosXInvalid =
+            posX + params.width + horizontalInset > windowWidth - (minPaddingPx * 2);
+        boolean isPosYInvalid =
+            posY + params.height + verticalInset >= windowHeight - (minPaddingPx * 2);
+        if (isPosXInvalid || isPosYInvalid) {
             posX = 0;
             posY = 0;
         }
 
-        int minPaddingPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
-                DIALOG_MIN_PADDING);
-
-        if (params.width + horizontalInset >= windowWidth - (minPaddingPx * 2)) {
-            params.width = windowWidth - horizontalInset - (minPaddingPx * 2);
-        }
-
-        if (params.height + verticalInset >= windowHeight - (minPaddingPx * 2)) {
-            params.height = windowHeight - verticalInset - (minPaddingPx * 2);
-        }
-
+        // If the positions are set then return the params with the positions set. Otherwise set the
+        // dialog to be centered in the window.
         params.gravity = Gravity.TOP | Gravity.START;
         if (posX != 0 || posY != 0) {
             params.x = posX;
             params.y = posY;
             return params;
         } else {
-            params.x = ((windowWidth - horizontalInset) - params.width) / 2;
-            params.y = ((windowHeight - verticalInset) - params.height) / 2;
+            // We don't need to account for the top and start insets here because the x and y
+            // are relative to the window.
+            params.x = (windowWidth - horizontalInset - params.width) / 2;
+            params.y = (windowHeight - verticalInset - params.height) / 2;
         }
 
-        int startMarginThresholdPx = (int) CarUiUtils.dpToPixel(mContext.getResources(),
-                DIALOG_START_MARGIN_THRESHOLD);
-        boolean isLandscape = mContext.getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE;
+        // If the dialog is in landscape and the start margin is greater than the threshold, set the
+        // start margin to the threshold. (essentially left aligning the dialog instead of
+        // centering)
         int startMargin = (windowWidth - horizontalInset - params.width) / 2;
-
         if (isLandscape && startMargin > startMarginThresholdPx) {
             params.x = startMarginThresholdPx;
         }
