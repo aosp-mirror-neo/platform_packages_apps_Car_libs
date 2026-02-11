@@ -69,6 +69,8 @@ public class MediaSource {
     @Nullable
     private final ComponentName mBrowseService;
     @Nullable
+    private final ComponentName mIgnoredBrowseService;
+    @Nullable
     private final MediaControllerCompat mMediaController;
     @NonNull
     private final String mPackageName;
@@ -99,8 +101,9 @@ public class MediaSource {
             CharSequence displayName = extractDisplayName(ctx, serviceInfo, packageName);
             Drawable icon = extractIcon(ctx, serviceInfo, packageName);
             ComponentName browseService = new ComponentName(packageName, className);
-            return new MediaSource(browseService, /* mediaController= */ null, packageName,
-                    displayName, icon, new IconCropper(ctx), ctx.getPackageManager());
+            return new MediaSource(browseService, /* ignoredBrowseService= */ null,
+                    /* mediaController= */ null, packageName, displayName, icon,
+                    new IconCropper(ctx), ctx.getPackageManager());
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Component not found " + componentName.flattenToString());
             return null;
@@ -139,8 +142,10 @@ public class MediaSource {
             Drawable icon = extractIcon(context, serviceInfo, packageName);
 
             ComponentName browseService = ignoreBrowser ? null : componentName;
-            return new MediaSource(browseService, mediaController, packageName, displayName,
-                    icon, new IconCropper(context), context.getPackageManager());
+            ComponentName ignoredBrowseService = ignoreBrowser ? componentName : null;
+            return new MediaSource(browseService, ignoredBrowseService, mediaController,
+                    packageName, displayName, icon, new IconCropper(context),
+                    context.getPackageManager());
         } catch (NameNotFoundException e) {
             Log.w(TAG, "App not found " + packageName);
             return null;
@@ -168,20 +173,34 @@ public class MediaSource {
             CharSequence displayName = extractDisplayName(context, serviceInfo, packageName);
             Drawable icon = extractIcon(context, serviceInfo, packageName);
 
-            return new MediaSource(componentName, /* mediaController= */ null, packageName,
-                    displayName, icon, new IconCropper(context), context.getPackageManager());
+            return new MediaSource(componentName, /* ignoredBrowseService= */ null,
+                    /* mediaController= */ null, packageName, displayName, icon,
+                    new IconCropper(context), context.getPackageManager());
         } catch (NameNotFoundException e) {
             Log.w(TAG, "App not found " + packageName);
             return null;
         }
     }
 
+    /**
+     * Create a {@link MediaSource} with the given parameters and a null {@link
+     * MediaControllerCompat}
+     */
+    public MediaSource(@Nullable ComponentName browseService, @NonNull String packageName) {
+        this(browseService, null, null, packageName, null, null, null, null);
+    }
+
+    /**
+     * Create a {@link MediaSource} with the given parameters
+     */
     @VisibleForTesting
     public MediaSource(@Nullable ComponentName browseService,
+            @Nullable ComponentName ignoredBrowseService,
             @Nullable MediaControllerCompat mediaController, @NonNull String packageName,
-            @NonNull CharSequence displayName, @NonNull Drawable icon,
-            @NonNull IconCropper iconCropper, @NonNull PackageManager packageManager) {
+            @Nullable CharSequence displayName, @Nullable Drawable icon,
+            @Nullable IconCropper iconCropper, @Nullable PackageManager packageManager) {
         mBrowseService = browseService;
+        mIgnoredBrowseService = ignoredBrowseService;
         mMediaController = mediaController;
         mPackageName = packageName;
         mDisplayName = displayName;
@@ -298,6 +317,8 @@ public class MediaSource {
         ServiceInfo serviceInfo = null;
         if (mBrowseService != null) {
             serviceInfo = getBrowseServiceInfo(context, mBrowseService);
+        } else if (mIgnoredBrowseService != null) {
+            serviceInfo = getBrowseServiceInfo(context, mIgnoredBrowseService);
         }
         try {
             return extractDisplayName(context, serviceInfo, getPackageName());
@@ -372,6 +393,16 @@ public class MediaSource {
     @Nullable
     private Intent createMediaAppIntent(Context context) {
         if (mBrowseService == null) {
+            // Fallback to ignored browse service if available. This is the most reliable fallback
+            // as it was resolved during creation.
+            if (mIgnoredBrowseService != null) {
+                Intent intent = new Intent(CarMediaIntents.ACTION_MEDIA_TEMPLATE);
+                intent.putExtra(EXTRA_MEDIA_COMPONENT, mIgnoredBrowseService.flattenToString());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                return intent;
+            }
+
+
             Intent mediaSessionIntent = createMediaSessionIntent();
             if (mediaSessionIntent == null) {
                 return null;
@@ -412,6 +443,10 @@ public class MediaSource {
      * will be used. Otherwise the intent returned from getIntent() will be used.
      */
     public void launchActivity(Context context, ActivityOptions activityOptions) {
+        if (context == null) {
+            return;
+        }
+
         PendingIntent pendingIntent = getPendingIntent();
         if (pendingIntent != null) {
             try {
@@ -419,7 +454,7 @@ public class MediaSource {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     activityOptions.setPendingIntentBackgroundActivityStartMode(
                             ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-                    pendingIntent.send(activityOptions.toBundle());
+                    pendingIntent.send(activityOptions != null ? activityOptions.toBundle() : null);
                 } else {
                     pendingIntent.send();
                 }
@@ -430,7 +465,14 @@ public class MediaSource {
             Intent intent = createMediaAppIntent(context);
             if (intent != null) {
                 Log.i(TAG, "Launching intent " + intent);
-                context.startActivity(getIntent(), activityOptions.toBundle());
+                try {
+                    context.startActivity(intent,
+                            activityOptions != null ? activityOptions.toBundle() : null);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception trying to launch intent", e);
+                }
+            } else {
+                Log.w(TAG, "No intent to launch for " + mPackageName);
             }
         }
     }

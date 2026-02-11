@@ -59,7 +59,7 @@ public class MediaTestUtils {
         String displayName = browseService == null ? "" : browseService.getClassName();
         Drawable icon = new ColorDrawable();
         IconCropper iconCropper = new IconCropper(new Path());
-        return new MediaSource(browseService, mediaController, packageName, displayName, icon,
-                iconCropper, packageManager);
+        return new MediaSource(browseService, /* ignoredBrowseService= */ null, mediaController,
+                packageName, displayName, icon, iconCropper, packageManager);
     }
 }
