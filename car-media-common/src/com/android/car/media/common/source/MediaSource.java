@@ -191,6 +191,17 @@ public class MediaSource {
     }
 
     /**
+     * Create a {@link MediaSource} with the given parameters, for backward compatibility
+     */
+    public MediaSource(@Nullable ComponentName browseService,
+            @Nullable MediaControllerCompat mediaController, @NonNull String packageName,
+            @Nullable CharSequence displayName, @Nullable Drawable icon,
+            @Nullable IconCropper iconCropper, @Nullable PackageManager packageManager) {
+        this(browseService, null, mediaController, packageName, displayName, icon, iconCropper,
+                packageManager);
+    }
+
+    /**
      * Create a {@link MediaSource} with the given parameters
      */
     @VisibleForTesting
