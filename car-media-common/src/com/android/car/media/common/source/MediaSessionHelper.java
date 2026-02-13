@@ -465,40 +465,23 @@ public class MediaSessionHelper extends MediaController.Callback {
 
     private MediaSource createSavedMediaSource(String savedMediaSourceName,
             List<MediaController> activeOrPausedControllers) {
-        if (mIgnoreBrowser) {
-            String packageName = savedMediaSourceName;
-            ComponentName componentName = ComponentName.unflattenFromString(savedMediaSourceName);
-
-            if (componentName != null) {
-                packageName = componentName.getPackageName();
-            }
-
-            MediaControllerCompat controller = findMatchingMediaController(packageName,
-                    activeOrPausedControllers);
-            if (controller != null) {
-                return MediaSource.create(mContext.get(), controller, /* ignoreBrowser= */ true);
-            }
-            if (Log.isLoggable(TAG, Log.WARN)) {
-                Log.w(TAG, "createSavedMediaSource: No matching controller found for " + packageName
-                        + " in session-only mode. Returning null.");
-            }
-            return null;
-        }
-
+        String packageName = savedMediaSourceName;
         ComponentName componentName = ComponentName.unflattenFromString(savedMediaSourceName);
         if (componentName != null) {
-            // Initialize using MBS
-            return MediaSource.create(mContext.get(), componentName);
-        } else {
-            MediaControllerCompat controller = findMatchingMediaController(savedMediaSourceName,
-                    activeOrPausedControllers);
-            if (controller != null) {
-                // Initialize using any existing media controller
-                return MediaSource.create(mContext.get(), controller, /* ignoreBrowser= */ true);
-            }
-            // Initialize using package name
-            return MediaSource.create(mContext.get(), savedMediaSourceName);
+            packageName = componentName.getPackageName();
+            // Initialize using MBS component name
+            return MediaSource.create(mContext.get(), componentName, mIgnoreBrowser);
         }
+
+        MediaControllerCompat controller = findMatchingMediaController(packageName,
+                activeOrPausedControllers);
+        if (controller != null) {
+            // Initialize using any existing media controller
+            return MediaSource.create(mContext.get(), controller, mIgnoreBrowser);
+        }
+
+        // Initialize using package name
+        return MediaSource.create(mContext.get(), packageName);
     }
 
     private MediaControllerCompat findMatchingMediaController(String packageName,

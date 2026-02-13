@@ -88,6 +88,15 @@ public class MediaSource {
      */
     @Nullable
     public static MediaSource create(@NonNull Context ctx, @NonNull ComponentName componentName) {
+        return create(ctx, componentName, /* ignoreBrowser= */ false);
+    }
+
+    /**
+     * Creates a {@link MediaSource} for the given {@link ComponentName}
+     */
+    @Nullable
+    public static MediaSource create(@NonNull Context ctx, @NonNull ComponentName componentName,
+            boolean ignoreBrowser) {
         ServiceInfo serviceInfo = getBrowseServiceInfo(ctx, componentName);
 
         String className = serviceInfo != null ? serviceInfo.name : null;
@@ -100,8 +109,11 @@ public class MediaSource {
             String packageName = componentName.getPackageName();
             CharSequence displayName = extractDisplayName(ctx, serviceInfo, packageName);
             Drawable icon = extractIcon(ctx, serviceInfo, packageName);
-            ComponentName browseService = new ComponentName(packageName, className);
-            return new MediaSource(browseService, /* ignoredBrowseService= */ null,
+            ComponentName browseService = ignoreBrowser ? null
+                    : new ComponentName(packageName, className);
+            ComponentName ignoredBrowseService = ignoreBrowser
+                    ? new ComponentName(packageName, className) : null;
+            return new MediaSource(browseService, ignoredBrowseService,
                     /* mediaController= */ null, packageName, displayName, icon,
                     new IconCropper(ctx), ctx.getPackageManager());
         } catch (PackageManager.NameNotFoundException e) {

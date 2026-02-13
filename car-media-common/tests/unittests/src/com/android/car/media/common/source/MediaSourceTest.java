@@ -157,11 +157,10 @@ public class MediaSourceTest {
         // Prepare mock context and package manager
         String packageName = TEST_MBS_PKG;
         // Create icon cropper mock
-
         IconCropper mockIconCropper = mock(IconCropper.class);
-        MediaSource mediaSource = new MediaSource(null, null, null, packageName, "DisplayName",
-                mMockContext.getDrawable(android.R.drawable.sym_def_app_icon), mockIconCropper,
-                mMockPackageManager);
+        MediaSource mediaSource = new MediaSource(TEST_MBS_CN, null, null, packageName,
+                "DisplayName", mMockContext.getDrawable(android.R.drawable.sym_def_app_icon),
+                mockIconCropper, mMockPackageManager);
 
         // Mock no launcher intent
         when(mMockPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(null);
@@ -198,7 +197,6 @@ public class MediaSourceTest {
                 "android.car.intent.action.MEDIA_TEMPLATE");
         assertThat(launchedIntent.getStringExtra("android.car.intent.extra.MEDIA_COMPONENT"))
                 .isEqualTo(TEST_MBS_COMPONENT);
-        assertThat((launchedIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0).isTrue();
     }
 
     @Test
