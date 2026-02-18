@@ -469,15 +469,39 @@ public class MediaSessionHelper extends MediaController.Callback {
         ComponentName componentName = ComponentName.unflattenFromString(savedMediaSourceName);
         if (componentName != null) {
             packageName = componentName.getPackageName();
-            // Initialize using MBS component name
-            return MediaSource.create(mContext.get(), componentName, mIgnoreBrowser);
+        }
+
+        if (!mIgnoreBrowser && componentName != null) {
+            // If we are not ignoring the browser service and we have a component name, we should
+            // use it to create the media source.
+            // This is preferred over using an existing MediaController because we want to make sure
+            // we are connecting to the browser service if possible.
+            return MediaSource.create(mContext.get(), componentName);
         }
 
         MediaControllerCompat controller = findMatchingMediaController(packageName,
                 activeOrPausedControllers);
+
+        if (controller == null) {
+            // If the media controller is not in the active or paused list, we should check the
+            // active sessions.
+            List<MediaController> activeSessions = getActiveSessions();
+            controller = findMatchingMediaController(packageName, activeSessions);
+
+        }
+
         if (controller != null) {
             // Initialize using any existing media controller
-            return MediaSource.create(mContext.get(), controller, mIgnoreBrowser);
+            // If we have a component name, pass it down so it can be used for icon/label lookup
+            // even if ignoreBrowser is true.
+            return MediaSource.create(mContext.get(), controller, componentName,
+                    mIgnoreBrowser);
+        }
+
+        if (componentName != null) {
+            // Initialize using MBS component name
+            // This is reached if ignoreBrowser is true and no controller was found.
+            return MediaSource.create(mContext.get(), componentName, mIgnoreBrowser);
         }
 
         // Initialize using package name

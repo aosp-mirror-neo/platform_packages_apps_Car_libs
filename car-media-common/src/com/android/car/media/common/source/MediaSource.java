@@ -137,9 +137,25 @@ public class MediaSource {
     @Nullable
     public static MediaSource create(@NonNull Context context,
             @NonNull MediaControllerCompat mediaController, boolean ignoreBrowser) {
+        return create(context, mediaController, null, ignoreBrowser);
+    }
+
+    /**
+     * Creates a {@link MediaSource} for the given {@link MediaControllerCompat}.
+     *
+     * @param componentName The component name to use for the MediaSource. If null, it will be
+     *                      inferred from the media controller.
+     */
+    @Nullable
+    public static MediaSource create(@NonNull Context context,
+            @NonNull MediaControllerCompat mediaController, @Nullable ComponentName componentName,
+            boolean ignoreBrowser) {
         String packageName = mediaController.getPackageName();
 
-        ComponentName componentName = getMediaControllerMBS(context, mediaController);
+        if (componentName == null) {
+            componentName = getMediaControllerMBS(context, mediaController);
+        }
+
         ServiceInfo serviceInfo = null;
         if (componentName != null) {
             serviceInfo = getBrowseServiceInfo(context, componentName);
@@ -171,6 +187,17 @@ public class MediaSource {
      */
     @Nullable
     public static MediaSource create(@NonNull Context context, @NonNull String packageName) {
+        return create(context, packageName, /* ignoreBrowser= */ false);
+    }
+
+    /**
+     * Creates a {@link MediaSource} for the given package name. This constructor should be avoided
+     * when possible as it may not map to any mbs or media session and doesn't handle multiple
+     * sources per package.
+     */
+    @Nullable
+    public static MediaSource create(@NonNull Context context, @NonNull String packageName,
+            boolean ignoreBrowser) {
         try {
             ServiceInfo serviceInfo = null;
             ComponentName componentName = getPackageNameMBS(context, packageName);
