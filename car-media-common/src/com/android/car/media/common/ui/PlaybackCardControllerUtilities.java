@@ -249,6 +249,7 @@ public final class PlaybackCardControllerUtilities {
                     if (customAction != null) {
                         button.setImageDrawable(customAction.mIcon);
                         ViewUtils.setVisible(button, true);
+                        button.setEnabled(true);
                         button.setOnClickListener(v -> {
                             if (playbackController != null) {
                                 playbackController.doCustomAction(
@@ -292,6 +293,7 @@ public final class PlaybackCardControllerUtilities {
                     if (customAction != null) {
                         button.setImageDrawable(customAction.mIcon);
                         ViewUtils.setVisible(button, true);
+                        button.setEnabled(true);
                         button.setOnClickListener(v -> {
                             if (playbackController != null) {
                                 playbackController.doCustomAction(
@@ -317,10 +319,12 @@ public final class PlaybackCardControllerUtilities {
             if (i < actionsToFill.size()) {
                 CustomPlaybackAction customAction = a.fetchDrawable(context);
                 if (customAction != null) {
-                    actionsToFill.get(i).setImageDrawable(customAction.mIcon);
-                    actionsToFill.get(i).setBackgroundColor(Color.TRANSPARENT);
-                    ViewUtils.setVisible(actionsToFill.get(i), true);
-                    actionsToFill.get(i).setOnClickListener(v -> {
+                    ImageButton actionButton = actionsToFill.get(i);
+                    actionButton.setImageDrawable(customAction.mIcon);
+                    actionButton.setBackgroundColor(Color.TRANSPARENT);
+                    ViewUtils.setVisible(actionButton, true);
+                    actionButton.setEnabled(true);
+                    actionButton.setOnClickListener(v -> {
                         if (playbackController != null) {
                             playbackController.doCustomAction(
                                     customAction.mAction, customAction.mExtras);
