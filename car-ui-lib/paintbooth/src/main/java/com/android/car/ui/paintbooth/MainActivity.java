@@ -16,28 +16,17 @@
 
 package com.android.car.ui.paintbooth;
 
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
-import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
-import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
-
-import static com.android.car.ui.paintbooth.PaintBoothApplication.SHARED_PREFERENCES_FILE;
-import static com.android.car.ui.paintbooth.PaintBoothApplication.SHARED_PREFERENCES_PLUGIN_DENYLIST;
-
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ProviderInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -62,13 +51,11 @@ import com.android.car.ui.paintbooth.toolbar.ToolbarActivity;
 import com.android.car.ui.paintbooth.widescreenime.WideScreenImeActivity;
 import com.android.car.ui.paintbooth.widescreenime.WideScreenTestView;
 import com.android.car.ui.paintbooth.widgets.WidgetActivity;
-import com.android.car.ui.pluginsupport.PluginFactorySingleton;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.toolbar.ToolbarController;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -84,11 +71,6 @@ public class MainActivity extends Activity {
     private final List<ListElement> mActivities = Arrays.asList(
             new ServiceElement("Show foreground activities", CurrentActivityService.class),
             new ServiceElement("Simulate Screen Bounds", VisibleBoundsSimulator.class),
-            new SwitchElement("Add PaintBooth to plugin deny-list", this::isInPluginDenyList,
-                    this::onPluginSwitchChanged),
-            new SwitchElement("Set plugin enabled state",
-                    () -> PluginFactorySingleton.isPluginEnabled(this),
-                    this::onPluginEnabledStateChanged),
             new ActivityElement("Token samples", TokenActivity.class),
             new ActivityElement("Theme samples", TextSamples.class),
             new ActivityElement("Dialogs sample", DialogsActivity.class),
@@ -296,49 +278,6 @@ public class MainActivity extends Activity {
             intent.setAction(STOP_SERVICE);
         }
         startForegroundService(intent);
-    }
-
-    private boolean isInPluginDenyList() {
-        return getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE)
-                .getStringSet(SHARED_PREFERENCES_PLUGIN_DENYLIST, null) != null;
-    }
-
-    private void onPluginSwitchChanged(CompoundButton unused, boolean checked) {
-        getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE)
-                .edit()
-                .putStringSet(SHARED_PREFERENCES_PLUGIN_DENYLIST,
-                        checked ? Collections.singleton("com.chassis.car.ui.plugin") : null)
-                .apply();
-        Toast.makeText(this, "Relaunch PaintBooth to see effects", Toast.LENGTH_SHORT).show();
-    }
-
-    private void onPluginEnabledStateChanged(CompoundButton switchWidget, boolean enabled) {
-        String authority = this.getString(
-                R.string.car_ui_plugin_package_provider_authority_name);
-        ProviderInfo providerInfo = this.getPackageManager().resolveContentProvider(authority,
-                MATCH_DISABLED_COMPONENTS | MATCH_SYSTEM_ONLY);
-        if (providerInfo == null) {
-            switchWidget.setText(R.string.try_enable_plugin);
-            switchWidget.setEnabled(false);
-            switchWidget.setChecked(false);
-            Toast.makeText(this, "Plugin is disabled or does not exist",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        ComponentName componentName = new ComponentName(providerInfo.packageName,
-                providerInfo.name);
-        int state = enabled ? COMPONENT_ENABLED_STATE_ENABLED : COMPONENT_ENABLED_STATE_DISABLED;
-        this.getPackageManager().setComponentEnabledSetting(componentName,
-                state, 0 /* no optional flags */);
-        // PaintBooth will force quit when disabling the plugin (enabled = false), so these values
-        // will be reset when PaintBooth is relaunched
-        if (enabled) {
-            switchWidget.setText(R.string.set_plugin_enabled_state);
-            switchWidget.setEnabled(true);
-            switchWidget.setChecked(true);
-            // TODO(b/288332302) Restart paintbooth automatically for convenience
-            Toast.makeText(this, "Relaunch PaintBooth to see effects", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private abstract static class ListElement {
