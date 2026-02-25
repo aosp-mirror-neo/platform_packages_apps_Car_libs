@@ -22,7 +22,6 @@ import android.text.SpannableString;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager.LayoutParams;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,9 +33,6 @@ import com.android.car.ui.FocusAreaAdapterV1;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.FocusParkingViewAdapterV1;
 import com.android.car.ui.R;
-import com.android.car.ui.appstyledview.AppStyledViewController;
-import com.android.car.ui.appstyledview.AppStyledViewControllerAdapterV3;
-import com.android.car.ui.appstyledview.AppStyledViewControllerImpl;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.plugin.oemapis.Consumer;
@@ -46,8 +42,6 @@ import com.android.car.ui.plugin.oemapis.Function;
 import com.android.car.ui.plugin.oemapis.InsetsOEMV1;
 import com.android.car.ui.plugin.oemapis.PluginFactoryOEMV5;
 import com.android.car.ui.plugin.oemapis.TextOEMV1;
-import com.android.car.ui.plugin.oemapis.appstyledview.AppStyledViewControllerOEMV2;
-import com.android.car.ui.plugin.oemapis.appstyledview.AppStyledViewControllerOEMV3;
 import com.android.car.ui.plugin.oemapis.recyclerview.AdapterOEMV1;
 import com.android.car.ui.plugin.oemapis.recyclerview.ContentListItemOEMV2;
 import com.android.car.ui.plugin.oemapis.recyclerview.HeaderListItemOEMV1;
@@ -70,7 +64,6 @@ import com.android.car.ui.toolbar.ToolbarControllerAdapterV2;
 import com.android.car.ui.utils.CarUiUtils;
 import com.android.car.ui.widget.CarUiTextView;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -159,30 +152,7 @@ public final class PluginFactoryAdapterV5 implements PluginFactory {
         return mFactoryStub.createCarUiPreferenceView(context, attrs);
     }
 
-    @SuppressWarnings("AndroidJdkLibsChecker")
-    @NonNull
-    @Override
-    public AppStyledViewController createAppStyledView(@NonNull Context activityContext) {
-        AppStyledViewControllerOEMV3 appStyledViewControllerOEMV3 = null;
-        try {
-            Method createAppStyledView = mOem.getClass()
-                    .getDeclaredMethod("createAppStyledView", Context.class);
-            String returnTypeName = createAppStyledView.getGenericReturnType().getTypeName();
-            if (AppStyledViewControllerOEMV3.class.getTypeName().equals(returnTypeName)) {
-                appStyledViewControllerOEMV3 = mOem.createAppStyledView(activityContext);
-            } else if (AppStyledViewControllerOEMV2.class.getTypeName()
-                        .equals(returnTypeName)) {
-                appStyledViewControllerOEMV3 = from(
-                        (AppStyledViewControllerOEMV2) createAppStyledView.invoke(mOem,
-                                activityContext));
-            }
-        } catch (ReflectiveOperationException e) {
-            // fallback to the static implementation.
-        }
-        return appStyledViewControllerOEMV3 == null ? new AppStyledViewControllerImpl(
-                activityContext) : new AppStyledViewControllerAdapterV3(activityContext,
-                    appStyledViewControllerOEMV3);
-    }
+
 
     private Insets adaptInsets(InsetsOEMV1 insetsOEM) {
         return new Insets(insetsOEM.getLeft(), insetsOEM.getTop(),
@@ -615,51 +585,5 @@ public final class PluginFactoryAdapterV5 implements PluginFactory {
         }
     }
 
-    private static AppStyledViewControllerOEMV3 from(
-            @NonNull AppStyledViewControllerOEMV2 appStyledViewControllerOEMV2) {
-        return new AppStyledViewControllerOEMV3() {
 
-            @Nullable
-            @Override
-            public View getView() {
-                return appStyledViewControllerOEMV2.getView();
-            }
-
-            @Override
-            public void setContent(@NonNull View content) {
-                appStyledViewControllerOEMV2.setContent(content);
-            }
-
-            @Override
-            public void setOnBackClickListener(@Nullable Runnable listener) {
-                appStyledViewControllerOEMV2.setOnBackClickListener(listener);
-            }
-
-            @Override
-            public void setNavIcon(int navIcon) {
-                appStyledViewControllerOEMV2.setNavIcon(navIcon);
-            }
-
-            @NonNull
-            @Override
-            public LayoutParams getDialogWindowLayoutParam(@NonNull LayoutParams params) {
-                return appStyledViewControllerOEMV2.getDialogWindowLayoutParam(params);
-            }
-
-            @Override
-            public int getContentAreaWidth() {
-                return appStyledViewControllerOEMV2.getContentAreaWidth();
-            }
-
-            @Override
-            public int getContentAreaHeight() {
-                return appStyledViewControllerOEMV2.getContentAreaHeight();
-            }
-
-            @Override
-            public void setSceneType(int sceneType) {
-                // ignore, not supported.
-            }
-        };
-    }
 }
