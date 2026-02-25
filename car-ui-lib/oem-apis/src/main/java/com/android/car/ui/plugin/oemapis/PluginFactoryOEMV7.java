@@ -21,7 +21,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.car.ui.plugin.oemapis.appstyledview.AppStyledViewControllerOEMV3;
 import com.android.car.ui.plugin.oemapis.preference.PreferenceOEMV1;
 import com.android.car.ui.plugin.oemapis.recyclerview.AdapterOEMV1;
 import com.android.car.ui.plugin.oemapis.recyclerview.ListItemOEMV1;
@@ -112,20 +111,7 @@ public interface PluginFactoryOEMV7 {
     @Nullable
     PreferenceOEMV1 createCarUiPreference(@NonNull Context sourceContext);
 
-    /**
-     * Creates a app styled view.
-     *
-     * @param sourceContext The context that will end up using this component. This context must not
-     *                      be used for inflating views, use the plugin context for that. This
-     *                      is used for two purposes: to add the correct configuration to the plugin
-     *                      context via {@code pluginContext.createConfigurationContext(
-     *                      sourceContext.getResources().getConfiguration()} before inflating views,
-     *                      and to pass to the rotary factories provided via
-     *                      {@link #setRotaryFactories}.
-     * @return the view used for app styled view.
-     */
-    @Nullable
-    AppStyledViewControllerOEMV3 createAppStyledView(@NonNull Context sourceContext);
+
 
     /**
      * Creates an instance of CarUiRecyclerView

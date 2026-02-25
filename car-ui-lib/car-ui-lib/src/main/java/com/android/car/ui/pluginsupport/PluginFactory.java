@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.car.ui.appstyledview.AppStyledViewController;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.recyclerview.CarUiListItem;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
@@ -111,14 +110,7 @@ public interface PluginFactory {
     @NonNull
     View createCarUiPreferenceView(@NonNull Context context, @NonNull AttributeSet attrs);
 
-    /**
-     * Creates a app styled view.
-     *
-     * @return the view used for app styled view.
-     */
 
-    @NonNull
-    AppStyledViewController createAppStyledView(@NonNull Context activityContext);
 
     /**
      * Creates an instance of CarUiRecyclerView

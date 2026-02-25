@@ -22,7 +22,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.car.ui.appstyledview.AppStyledViewControllerImpl;
+
 import com.android.car.ui.plugin.PluginUiContextFactory;
 import com.android.car.ui.plugin.oemapis.Consumer;
 import com.android.car.ui.plugin.oemapis.FocusAreaOEMV1;
@@ -30,7 +30,6 @@ import com.android.car.ui.plugin.oemapis.FocusParkingViewOEMV1;
 import com.android.car.ui.plugin.oemapis.Function;
 import com.android.car.ui.plugin.oemapis.InsetsOEMV1;
 import com.android.car.ui.plugin.oemapis.PluginFactoryOEMV5;
-import com.android.car.ui.plugin.oemapis.appstyledview.AppStyledViewControllerOEMV3;
 import com.android.car.ui.plugin.oemapis.recyclerview.AdapterOEMV1;
 import com.android.car.ui.plugin.oemapis.recyclerview.ListItemOEMV1;
 import com.android.car.ui.plugin.oemapis.recyclerview.RecyclerViewAttributesOEMV1;
@@ -43,7 +42,6 @@ import com.android.car.ui.recyclerview.CarUiRecyclerViewImpl;
 import com.android.car.ui.utils.CarUiUtils;
 
 
-import com.chassis.car.ui.plugin.appstyledview.AppStyledViewControllerAdapterProxyV3;
 import com.chassis.car.ui.plugin.recyclerview.CarUiListItemAdapterAdapterProxyV1;
 import com.chassis.car.ui.plugin.recyclerview.ListItemUtils;
 import com.chassis.car.ui.plugin.recyclerview.RecyclerViewAdapterProxyV2;
@@ -85,15 +83,6 @@ public class PluginFactoryImplV5 implements PluginFactoryOEMV5 {
         return true;
     }
 
-    @Nullable
-    @Override
-    public AppStyledViewControllerOEMV3 createAppStyledView(@NonNull Context sourceContext) {
-        Context pluginContext = mPluginUiContextFactory.getPluginUiContext(sourceContext);
-        // build the app styled controller that will be delegated to
-        AppStyledViewControllerImpl appStyledViewController = new AppStyledViewControllerImpl(
-                pluginContext);
-        return new AppStyledViewControllerAdapterProxyV3(appStyledViewController);
-    }
 
     @Nullable
     @Override
