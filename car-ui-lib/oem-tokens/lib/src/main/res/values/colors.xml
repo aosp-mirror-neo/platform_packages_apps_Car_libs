@@ -109,6 +109,10 @@
     <color name="oem_color_on_blue">#FFFFFF</color>
     <color name="oem_color_blue_container">#D9E2FF</color>
     <color name="oem_color_on_blue_container">#001945</color>
+    <color name="oem_color_red">#BA1B19</color>
+    <color name="oem_color_on_red">#FFFFFF</color>
+    <color name="oem_color_red_container">#FFDAD5</color>
+    <color name="oem_color_on_red_container">#410001</color>
     <color name="oem_color_green">#006E29</color>
     <color name="oem_color_on_green">#FFFFFF</color>
     <color name="oem_color_green_container">#92F99D</color>
@@ -121,6 +125,10 @@
     <color name="oem_color_on_blue_dark">#001945</color>
     <color name="oem_color_blue_container_dark">#00419C</color>
     <color name="oem_color_on_blue_container_dark">#D9E2FF</color>
+    <color name="oem_color_red_dark">#FF897C</color>
+    <color name="oem_color_on_red_dark">#410001</color>
+    <color name="oem_color_red_container_dark">#930008</color>
+    <color name="oem_color_on_red_container_dark">#FFDAD5</color>
     <color name="oem_color_green_dark">#5BBF6B</color>
     <color name="oem_color_on_green_dark">#002107</color>
     <color name="oem_color_green_container_dark">#00531D</color>
@@ -129,5 +137,4 @@
     <color name="oem_color_on_yellow_dark">#2A1800</color>
     <color name="oem_color_yellow_container_dark">#643F00</color>
     <color name="oem_color_on_yellow_container_dark">#FFDDB6</color>
-
 </resources>

@@ -27,14 +27,10 @@ import com.android.car.ui.FocusArea;
 import com.android.car.ui.FocusAreaAdapterV1;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.FocusParkingViewAdapterV1;
-import com.android.car.ui.appstyledview.AppStyledViewController;
-import com.android.car.ui.appstyledview.AppStyledViewControllerAdapterV1;
-import com.android.car.ui.appstyledview.AppStyledViewControllerImpl;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.plugin.oemapis.InsetsOEMV1;
 import com.android.car.ui.plugin.oemapis.PluginFactoryOEMV1;
-import com.android.car.ui.plugin.oemapis.appstyledview.AppStyledViewControllerOEMV1;
 import com.android.car.ui.plugin.oemapis.toolbar.ToolbarControllerOEMV1;
 import com.android.car.ui.recyclerview.CarUiListItem;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
@@ -108,15 +104,7 @@ public final class PluginFactoryAdapterV1 implements PluginFactory {
         return mFactoryStub.createCarUiPreferenceView(context, attrs);
     }
 
-    @NonNull
-    @Override
-    public AppStyledViewController createAppStyledView(@NonNull Context activityContext) {
-        AppStyledViewControllerOEMV1 appStyledViewControllerOEMV1 = mOem.createAppStyledView(
-                activityContext);
-        return appStyledViewControllerOEMV1 == null ? new AppStyledViewControllerImpl(
-                activityContext) : new AppStyledViewControllerAdapterV1(activityContext,
-                appStyledViewControllerOEMV1);
-    }
+
 
     private Insets adaptInsets(InsetsOEMV1 insetsOEM) {
         return new Insets(insetsOEM.getLeft(), insetsOEM.getTop(),

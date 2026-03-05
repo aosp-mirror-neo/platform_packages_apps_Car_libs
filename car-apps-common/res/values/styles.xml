@@ -82,7 +82,7 @@
     <!-- Styles for text. Sub1-3 are not included here as their use should be exceptional -->
     <style name="TextAppearance">
         <item name="android:fontFamily">roboto-regular</item>
-        <item name="android:textColor">@color/primary_text_color</item>
+        <item name="android:textColor">?android:attr/colorForeground</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 

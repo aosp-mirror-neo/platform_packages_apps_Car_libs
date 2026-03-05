@@ -62,6 +62,10 @@
     <public name="colorOnBlue" id="0x0077002F" type="attr" />
     <public name="colorBlueContainer" id="0x00770030" type="attr" />
     <public name="colorOnBlueContainer" id="0x00770031" type="attr" />
+    <public name="colorRed" id="0x00770032" type="attr" />
+    <public name="colorOnRed" id="0x00770033" type="attr" />
+    <public name="colorRedContainer" id="0x00770034" type="attr" />
+    <public name="colorOnRedContainer" id="0x00770035" type="attr" />
 
     <!-- Primary tonal palette -->
     <public name="colorPrimaryPalette0" id="0x00771000" type="attr" />
