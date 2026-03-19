@@ -97,7 +97,7 @@ public class MediaButtonController {
 
         mShowCircularProgressBar = context.getResources().getBoolean(
                 R.bool.show_circular_progress_bar);
-        mIconsColor = context.getResources().getColorStateList(iconColorsId, null);
+        mIconsColor = context.getResources().getColorStateList(iconColorsId, context.getTheme());
 
         mSkipPrevButton = createIconButton(context.getDrawable(skipPrevButtonId));
         mSkipPrevButton.setId(R.id.skip_prev);
