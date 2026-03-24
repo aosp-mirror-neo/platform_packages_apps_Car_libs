@@ -711,90 +711,6 @@ internal constructor(
         }
     }
 
-    private fun retrieveAppCardComponentUpdate(
-        brokerWrapper: BrokerWrapper,
-        activeAppCard: ActiveAppCard,
-        identifier: ApplicationIdentifier,
-        appCardId: String,
-        componentId: String,
-    ) {
-        synchronized(idBrokerMap) {
-            val broker = brokerWrapper.broker
-            val timer = activeAppCard.appCardTimer
-            val listenableFuture =
-                executorService.submit<AppCardComponentContainer> {
-                    val bundle = Bundle()
-                    bundle.apply {
-                        putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_ID, appCardId)
-                        putString(
-                            AppCardContentProvider.BUNDLE_KEY_APP_CARD_COMPONENT_ID,
-                            componentId,
-                        )
-                    }
-
-                    val appCardTransport =
-                        try {
-                            broker.getAppCardTransport(
-                                identifier,
-                                errorId = "$appCardId#$componentId",
-                                bundle,
-                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
-                            )
-                        } catch (exception: Exception) {
-                            if (exception is ContentProviderBroker.ContentProviderBrokerException) {
-                                if (exception.cause is DeadObjectException) {
-                                    handleInvalidBroker(identifier)
-                                }
-                            }
-
-                            throw exception
-                        }
-
-                    val component =
-                        appCardTransport.component
-                            ?: throw AppCardHostException(
-                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
-                                id = "$appCardId#$componentId",
-                                IllegalStateException("App card component missing from transport"),
-                            )
-                    timer.componentUpdate(component.componentId)
-
-                    AppCardComponentContainer(identifier, appCardId, component)
-                }
-
-            Futures.addCallback(
-                listenableFuture,
-                object : FutureCallback<AppCardComponentContainer> {
-                    override fun onSuccess(appCardComponentContainer: AppCardComponentContainer) {
-                        synchronized(listeners) {
-                            listeners.forEach(
-                                Consumer { appCardListener: AppCardListener ->
-                                    appCardListener.onComponentReceived(appCardComponentContainer)
-                                }
-                            )
-                        }
-                    }
-
-                    override fun onFailure(throwable: Throwable) {
-                        Log.e(TAG, throwable.message, throwable)
-
-                        synchronized(listeners) {
-                            listeners.forEach(
-                                Consumer { appCardListener: AppCardListener ->
-                                    appCardListener.onPackageCommunicationError(
-                                        identifier,
-                                        throwable,
-                                    )
-                                }
-                            )
-                        }
-                    }
-                },
-                responseExecutor,
-            )
-        }
-    }
-
     private fun createUserContext(context: Context, userId: Int): Context {
         val flags = 0
         return context.createContextAsUser(UserHandle.of(userId), flags)
@@ -1036,15 +952,110 @@ internal constructor(
         id: String,
         componentId: String,
     ) {
-        synchronized(idBrokerMap) {
-            val identifier = authorityToIdentifierMap[authority] ?: return
+        executorService.execute {
+            val updateInfo =
+                synchronized(idBrokerMap) {
+                    val identifier = authorityToIdentifierMap[authority] ?: return@synchronized null
 
-            val brokerWrapper = idBrokerMap[identifier] ?: return
-            val cacheTimer = brokerWrapper.activeAppCardMap[id] ?: return
+                    val brokerWrapper = idBrokerMap[identifier] ?: return@synchronized null
+                    val activeAppCard =
+                        brokerWrapper.activeAppCardMap[id] ?: return@synchronized null
 
-            if (!cacheTimer.appCardTimer.isComponentReadyForUpdate(componentId)) return
+                    if (!activeAppCard.appCardTimer.isComponentReadyForUpdate(componentId)) {
+                        return@synchronized null
+                    }
+                    Triple(identifier, brokerWrapper, activeAppCard)
+                }
 
-            retrieveAppCardComponentUpdate(brokerWrapper, cacheTimer, identifier, id, componentId)
+            updateInfo?.let { (identifier, brokerWrapper, activeAppCard) ->
+                val broker = brokerWrapper.broker
+                val timer = activeAppCard.appCardTimer
+
+                val bundle = Bundle()
+                bundle.apply {
+                    putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_ID, id)
+                    putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_COMPONENT_ID, componentId)
+                }
+
+                try {
+                    val appCardTransport =
+                        broker.getAppCardTransport(
+                            identifier,
+                            errorId = "$id#$componentId",
+                            bundle,
+                            AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
+                        )
+
+                    val component =
+                        appCardTransport.component
+                            ?: throw AppCardHostException(
+                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
+                                id = "$id#$componentId",
+                                IllegalStateException("App card component missing from transport"),
+                            )
+
+                    // Re-verify that the app card and its broker are still active after the
+                    // long-running IPC call, ensuring that we use the most current state
+                    // and avoid race conditions.
+                    synchronized(idBrokerMap) {
+                        val currentIdentifier =
+                            authorityToIdentifierMap[authority] ?: return@synchronized
+                        val currentBrokerWrapper =
+                            idBrokerMap[currentIdentifier] ?: return@synchronized
+                        val currentActiveCard =
+                            currentBrokerWrapper.activeAppCardMap[id] ?: return@synchronized
+
+                        currentActiveCard.appCardTimer.componentUpdate(component.componentId)
+
+                        val appCardComponentContainer =
+                            AppCardComponentContainer(currentIdentifier, id, component)
+
+                        responseExecutor.execute {
+                            synchronized(listeners) {
+                                listeners.forEach(
+                                    Consumer { appCardListener: AppCardListener ->
+                                        appCardListener.onComponentReceived(
+                                            appCardComponentContainer
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } catch (exception: Exception) {
+                    val identifierToReport =
+                        synchronized(idBrokerMap) {
+                            val freshIdentifier = authorityToIdentifierMap[authority]
+                            val identifierForError = freshIdentifier ?: identifier
+
+                            if (
+                                freshIdentifier != null &&
+                                    exception is
+                                        ContentProviderBroker.ContentProviderBrokerException &&
+                                    exception.cause is DeadObjectException &&
+                                    idBrokerMap[freshIdentifier] === brokerWrapper
+                            ) {
+                                handleInvalidBroker(freshIdentifier)
+                            }
+                            identifierForError
+                        }
+
+                    Log.e(TAG, exception.message, exception)
+
+                    responseExecutor.execute {
+                        synchronized(listeners) {
+                            listeners.forEach(
+                                Consumer { appCardListener: AppCardListener ->
+                                    appCardListener.onPackageCommunicationError(
+                                        identifierToReport,
+                                        exception,
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
