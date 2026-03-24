@@ -17,28 +17,28 @@
 package com.android.car.appcard.host
 
 import com.android.car.appcard.ImageAppCard
-import java.util.Timer
-import java.util.TimerTask
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 internal class AppCardTimer(
     private val listener: UpdateReadyListener,
     private val updateRateMs: Int,
     private val fastUpdateRateMs: Int,
-    private val timerFactory: TimerFactory =
-        object : TimerFactory {
-            override fun getTimer() = Timer()
-        },
+    private val scheduledExecutorService: ScheduledExecutorService,
 ) {
     private val componentUpdateStatusMap: ConcurrentMap<String, Boolean>
+    private val componentUpdateFutureMap: ConcurrentMap<String, ScheduledFuture<*>>
     private var identifier: ApplicationIdentifier? = null
     private var appCardId: String? = null
-    private var refreshTimer = timerFactory.getTimer()
+    private var refreshFuture: ScheduledFuture<*>? = null
 
     init {
         componentUpdateStatusMap = ConcurrentHashMap()
+        componentUpdateFutureMap = ConcurrentHashMap()
     }
 
     fun updateAppCard(appCardContainer: AppCardContainer) {
@@ -49,8 +49,7 @@ internal class AppCardTimer(
 
     private fun handleImageAppCardUpdate(imageAppCard: ImageAppCard, id: ApplicationIdentifier) {
         synchronized(lock = this) {
-            refreshTimer.cancel()
-            refreshTimer = timerFactory.getTimer()
+            cancelAllFutures()
 
             componentUpdateStatusMap.clear()
 
@@ -59,25 +58,22 @@ internal class AppCardTimer(
 
             imageAppCard.progressBar?.let {
                 componentUpdateStatusMap[it.componentId] = false
-                refreshTimer.schedule(
-                    object : TimerTask() {
-                        override fun run() {
-                            componentUpdateStatusMap[it.componentId] = true
-                        }
-                    },
-                    fastUpdateRateMs.toLong(),
-                )
+                val future =
+                    scheduledExecutorService.schedule(
+                        { componentUpdateStatusMap[it.componentId] = true },
+                        fastUpdateRateMs.toLong(),
+                        TimeUnit.MILLISECONDS,
+                    )
+                componentUpdateFutureMap[it.componentId] = future
             }
 
-            refreshTimer.schedule(
-                object : TimerTask() {
-                    override fun run() {
-                        listener.appCardIsReadyForUpdate(identifier, appCardId)
-                    }
-                },
-                updateRateMs.toLong(),
-                updateRateMs.toLong(),
-            )
+            refreshFuture =
+                scheduledExecutorService.scheduleAtFixedRate(
+                    { listener.appCardIsReadyForUpdate(identifier, appCardId) },
+                    updateRateMs.toLong(),
+                    updateRateMs.toLong(),
+                    TimeUnit.MILLISECONDS,
+                )
         }
     }
 
@@ -86,8 +82,7 @@ internal class AppCardTimer(
             appCardId ?: return
             identifier ?: return
 
-            refreshTimer.cancel()
-            refreshTimer = timerFactory.getTimer()
+            cancelAllFutures()
 
             listener.appCardIsReadyForUpdate(identifier, appCardId)
 
@@ -95,26 +90,23 @@ internal class AppCardTimer(
 
             componentUpdateStatusMap.keys.forEach(
                 Consumer { componentId: String ->
-                    refreshTimer.schedule(
-                        object : TimerTask() {
-                            override fun run() {
-                                componentUpdateStatusMap[componentId] = true
-                            }
-                        },
-                        fastUpdateRateMs.toLong(),
-                    )
+                    val future =
+                        scheduledExecutorService.schedule(
+                            { componentUpdateStatusMap[componentId] = true },
+                            fastUpdateRateMs.toLong(),
+                            TimeUnit.MILLISECONDS,
+                        )
+                    componentUpdateFutureMap[componentId] = future
                 }
             )
 
-            refreshTimer.schedule(
-                object : TimerTask() {
-                    override fun run() {
-                        listener.appCardIsReadyForUpdate(identifier, appCardId)
-                    }
-                },
-                updateRateMs.toLong(),
-                updateRateMs.toLong(),
-            )
+            refreshFuture =
+                scheduledExecutorService.scheduleAtFixedRate(
+                    { listener.appCardIsReadyForUpdate(identifier, appCardId) },
+                    updateRateMs.toLong(),
+                    updateRateMs.toLong(),
+                    TimeUnit.MILLISECONDS,
+                )
         }
     }
 
@@ -127,9 +119,7 @@ internal class AppCardTimer(
 
     fun destroy() {
         synchronized(lock = this) {
-            refreshTimer.cancel()
-            refreshTimer = timerFactory.getTimer()
-
+            cancelAllFutures()
             componentUpdateStatusMap.clear()
         }
     }
@@ -139,23 +129,26 @@ internal class AppCardTimer(
             if (!componentUpdateStatusMap.containsKey(componentId)) return
 
             componentUpdateStatusMap[componentId] = false
+            componentUpdateFutureMap[componentId]?.cancel(false)
 
-            refreshTimer.schedule(
-                object : TimerTask() {
-                    override fun run() {
-                        componentUpdateStatusMap[componentId] = true
-                    }
-                },
-                fastUpdateRateMs.toLong(),
-            )
+            val future =
+                scheduledExecutorService.schedule(
+                    { componentUpdateStatusMap[componentId] = true },
+                    fastUpdateRateMs.toLong(),
+                    TimeUnit.MILLISECONDS,
+                )
+            componentUpdateFutureMap[componentId] = future
         }
+    }
+
+    private fun cancelAllFutures() {
+        refreshFuture?.cancel(false)
+        refreshFuture = null
+        componentUpdateFutureMap.values.forEach { it.cancel(false) }
+        componentUpdateFutureMap.clear()
     }
 
     internal interface UpdateReadyListener {
         fun appCardIsReadyForUpdate(identifier: ApplicationIdentifier?, appCardId: String?)
-    }
-
-    internal interface TimerFactory {
-        fun getTimer(): Timer
     }
 }
