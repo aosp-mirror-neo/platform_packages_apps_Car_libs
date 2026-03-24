@@ -45,6 +45,7 @@ import com.android.car.appcard.util.ParcelableUtils
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
 import java.util.concurrent.Phaser
+import java.util.concurrent.ScheduledExecutorService
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -158,6 +159,7 @@ class AppCardHostTest {
                 listener: AppCardTimer.UpdateReadyListener,
                 updateRateMs: Int,
                 fastUpdateRateMs: Int,
+                scheduledExecutorService: ScheduledExecutorService,
             ): AppCardTimer {
                 actualUpdateReadyListener = listener
                 actualUpdateRateMs = updateRateMs

@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.function.Consumer
 
 class AppCardHost
@@ -73,7 +74,8 @@ internal constructor(
                 listener: UpdateReadyListener,
                 updateRateMs: Int,
                 fastUpdateRateMs: Int,
-            ) = AppCardTimer(listener, updateRateMs, fastUpdateRateMs)
+                scheduledExecutorService: ScheduledExecutorService,
+            ) = AppCardTimer(listener, updateRateMs, fastUpdateRateMs, scheduledExecutorService)
         },
         object : UserProvider {
             override fun getCurrentUser() = ActivityManager.getCurrentUser()
@@ -83,6 +85,7 @@ internal constructor(
     private val listeners: MutableSet<AppCardListener>
     private val idBrokerMap: ConcurrentMap<ApplicationIdentifier, BrokerWrapper>
     private val executorService = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool())
+    private val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val packageManager: PackageManager
     private val contentResolver: ContentResolver
     private val brokerFactory: BrokerFactory
@@ -192,6 +195,7 @@ internal constructor(
             synchronized(listeners) { listeners.clear() }
 
             closeAllApplicationConnections()
+            scheduledExecutorService.shutdownNow()
         }
     }
 
@@ -680,6 +684,7 @@ internal constructor(
                     listener = this,
                     updateRateMs = updateRateMs,
                     fastUpdateRateMs = fastUpdateRateMs,
+                    scheduledExecutorService = scheduledExecutorService,
                 )
             timer.updateAppCard(AppCardContainer(identifier, appCard))
             activeAppCardMap.put(appCard.id, ActiveAppCard(appCard, timer))
@@ -1032,6 +1037,7 @@ internal constructor(
             listener: UpdateReadyListener,
             updateRateMs: Int,
             fastUpdateRateMs: Int,
+            scheduledExecutorService: ScheduledExecutorService,
         ): AppCardTimer
     }
 
