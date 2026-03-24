@@ -187,6 +187,7 @@ class AppCardHostTest {
                 responseExecutor,
                 appCardTimerProvider,
                 userProvider,
+                8,
             )
 
         verify(packageManager)

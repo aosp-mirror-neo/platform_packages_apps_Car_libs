@@ -56,6 +56,7 @@ internal constructor(
     private val responseExecutor: Executor,
     private val timerProvider: AppCardTimerProvider,
     private val userProvider: UserProvider,
+    ipcThreadPoolSize: Int,
 ) : UpdateReadyListener, AppCardObserverCallback {
 
     constructor(
@@ -63,6 +64,7 @@ internal constructor(
         updateRate: Int,
         fastUpdateRate: Int,
         responseExecutor: Executor,
+        ipcThreadPoolSize: Int = DEFAULT_IPC_THREAD_COUNT,
     ) : this(
         c,
         updateRate,
@@ -79,12 +81,14 @@ internal constructor(
         object : UserProvider {
             override fun getCurrentUser() = ActivityManager.getCurrentUser()
         },
+        ipcThreadPoolSize,
     )
 
     private val listeners: MutableSet<AppCardListener>
     private val idBrokerMap: ConcurrentMap<ApplicationIdentifier, BrokerWrapper>
     private val authorityToIdentifierMap: ConcurrentMap<String, ApplicationIdentifier>
-    private val executorService = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool())
+    private val executorService =
+        MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(ipcThreadPoolSize))
     private val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val packageManager: PackageManager
     private val contentResolver: ContentResolver
@@ -1070,6 +1074,7 @@ internal constructor(
     companion object {
         private const val TAG = "AppCardHost"
         private const val DATA_SCHEME_PACKAGE = "package"
+        private const val DEFAULT_IPC_THREAD_COUNT = 8
 
         @Throws(AppCardHostException::class)
         private fun getHostAppCardsFromTransport(
