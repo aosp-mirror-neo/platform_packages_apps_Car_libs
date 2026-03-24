@@ -21,7 +21,9 @@ import android.util.Log
 import com.android.car.appcard.internal.proto.Image.ImageMessage
 import com.google.protobuf.ByteString
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import java.security.MessageDigest
+import java.util.Arrays
 
 /**
  * Image is a component that contains an image and information on how the image should be displayed.
@@ -39,7 +41,8 @@ class Image private constructor(builder: Builder) : Component(builder) {
     var imageData: Bitmap?
         private set
 
-    private var imageHashString: String? = null
+    private var imageHash: ByteArray? = null
+    private var capturedGenerationId: Int = -1
 
     init {
         imageData = builder.imageData
@@ -74,32 +77,47 @@ class Image private constructor(builder: Builder) : Component(builder) {
         return true
     }
 
+    /**
+     * Note: This method compares the properties of the [Image] component, including a snapshot of
+     * the [Bitmap] content taken at construction time. If the underlying [Bitmap] is mutated in
+     * place after construction, this instance will still be considered equal to other [Image]
+     * instances created from the same [Bitmap] state. To ensure UI updates after a [Bitmap]
+     * mutation, a new [Image] instance should be created or the existing one should be updated via
+     * [updateComponent].
+     */
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
-
         if (other !is Image) return false
+        if (
+            !super.equals(other) ||
+                contentScale != other.contentScale ||
+                colorFilter != other.colorFilter
+        ) {
+            return false
+        }
 
-        val imageEquals =
-            imageHashString?.let { it == other.imageHashString } ?: (other.imageHashString == null)
-        return imageEquals &&
-            super.equals(other) &&
-            contentScale == other.contentScale &&
-            colorFilter == other.colorFilter
+        if (imageData === other.imageData && capturedGenerationId == other.capturedGenerationId) {
+            return true
+        }
+
+        return Arrays.equals(imageHash, other.imageHash)
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
         result = 31 * result + contentScale.hashCode()
         result = 31 * result + colorFilter.hashCode()
-        result = 31 * result + (imageData?.hashCode() ?: 0)
+        result = 31 * result + Arrays.hashCode(imageHash)
         return result
     }
 
     private fun updateImageHash() {
+        val bitmap = imageData ?: return
+        capturedGenerationId = bitmap.generationId
         val md = MessageDigest.getInstance(HASH_ALGORITHM)
-        val imageByteArray = imageData?.let { toByteArray(it) }
-        val hashBytes = imageByteArray?.let { md.digest(it) }
-        imageHashString = hashBytes?.joinToString { HEX_FORMAT.format(it) }
+        val byteBuffer = ByteBuffer.allocate(bitmap.byteCount)
+        bitmap.copyPixelsToBuffer(byteBuffer)
+        imageHash = md.digest(byteBuffer.array())
     }
 
     /**
@@ -201,8 +219,7 @@ class Image private constructor(builder: Builder) : Component(builder) {
         private const val TAG = "Image"
         private const val BITMAP_QUALITY = 100
         private const val BITMAP_OFFSET = 0
-        private const val HASH_ALGORITHM = "SHA-512"
-        private const val HEX_FORMAT = "%02x"
+        private const val HASH_ALGORITHM = "MD5"
 
         /** @return an instance of [Builder] */
         @JvmStatic fun newBuilder(componentId: String) = Builder(componentId)
