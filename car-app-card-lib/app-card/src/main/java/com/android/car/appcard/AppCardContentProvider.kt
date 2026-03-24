@@ -470,17 +470,16 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
         }
 
         latestAppCard[appCard.id] = appCard
-        activeAppCardCountMap[id] =
-            (activeAppCardCountMap[id]?.let { it + 1 })
-                ?: run {
-                    if (dispatcher.getDesiredState() != Lifecycle.Event.ON_RESUME) {
-                        if (dispatcher.getDesiredState() != Lifecycle.Event.ON_START)
-                            dispatcher.queueOnStart()
-
-                        dispatcher.queueOnResume()
-                    }
-                    1 // run's return value
+        activeAppCardCountMap.compute(id) { _, count ->
+            val newCount = (count ?: 0) + 1
+            if (newCount == 1 && dispatcher.getDesiredState() != Lifecycle.Event.ON_RESUME) {
+                if (dispatcher.getDesiredState() != Lifecycle.Event.ON_START) {
+                    dispatcher.queueOnStart()
                 }
+                dispatcher.queueOnResume()
+            }
+            newCount
+        }
         appCardIdComponentMap[id] = getComponentMapFromAppCard(appCard)
 
         return appCard
@@ -493,29 +492,42 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
                 return
             }
 
-        val defaultValue = 0
-        var count = activeAppCardCountMap.getOrDefault(id, defaultValue)
-
-        when (count) {
-            0 -> Log.e(TAG, "App card remove requested for an inactive app card")
-            1 -> {
-                activeAppCardCountMap.remove(id)
-                appCardIdComponentMap.remove(id)
-                latestAppCard.remove(id)
-                onAppCardRemoved(id)
-
-                if (
-                    activeAppCardCountMap.isEmpty() &&
-                        dispatcher.getDesiredState() != Lifecycle.Event.ON_STOP
-                ) {
-                    if (dispatcher.getDesiredState() != Lifecycle.Event.ON_PAUSE)
-                        dispatcher.queueOnPause()
-
-                    dispatcher.queueOnStop()
+        var removed = false
+        var wasInactive = false
+        activeAppCardCountMap.compute(id) { _, count ->
+            when (count) {
+                null,
+                0 -> {
+                    wasInactive = true
+                    null
                 }
+                1 -> {
+                    removed = true
+                    null
+                }
+                else -> count - 1
             }
+        }
 
-            else -> activeAppCardCountMap[id] = --count
+        if (wasInactive) {
+            Log.e(TAG, "App card remove requested for an inactive app card")
+            return
+        }
+
+        if (removed) {
+            appCardIdComponentMap.remove(id)
+            latestAppCard.remove(id)
+            onAppCardRemoved(id)
+
+            if (
+                activeAppCardCountMap.isEmpty() &&
+                    dispatcher.getDesiredState() != Lifecycle.Event.ON_STOP
+            ) {
+                if (dispatcher.getDesiredState() != Lifecycle.Event.ON_PAUSE) {
+                    dispatcher.queueOnPause()
+                }
+                dispatcher.queueOnStop()
+            }
         }
     }
 
