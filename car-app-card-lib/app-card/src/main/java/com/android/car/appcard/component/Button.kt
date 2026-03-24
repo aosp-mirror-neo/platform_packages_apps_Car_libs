@@ -123,12 +123,11 @@ class Button private constructor(builder: Builder) : Component(builder) {
     }
 
     override fun hashCode(): Int {
-        var result = text?.hashCode() ?: 0
+        var result = super.hashCode()
+        result = 31 * result + (text?.hashCode() ?: 0)
         result = 31 * result + (image?.hashCode() ?: 0)
         result = 31 * result + buttonType.hashCode()
         result = 31 * result + (onClickListener?.hashCode() ?: 0)
-        result = 31 * result + (text?.hashCode() ?: 0)
-        result = 31 * result + (image?.hashCode() ?: 0)
         result = 31 * result + (intent?.hashCode() ?: 0)
         return result
     }
