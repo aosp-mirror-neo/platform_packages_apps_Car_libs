@@ -30,35 +30,44 @@ import java.util.Arrays
  */
 class Image private constructor(builder: Builder) : Component(builder) {
     /** @return [ContentScale] */
+    @Volatile
     var contentScale: ContentScale
         private set
 
     /** @return [ColorFilter] */
+    @Volatile
     var colorFilter: ColorFilter
         private set
 
     /** @return [android.graphics.Bitmap] */
+    @Volatile
     var imageData: Bitmap?
         private set
 
-    private var imageHash: ByteArray? = null
-    private var capturedGenerationId: Int = -1
+    @Volatile private var imageHash: ByteArray? = null
+    @Volatile private var capturedGenerationId: Int = -1
+    @Volatile private var compressedData: ByteArray? = null
+    @Volatile private var cachedHashCode: Int? = null
+    private val lock = Any()
 
     init {
         imageData = builder.imageData
         contentScale = builder.contentScale
         colorFilter = builder.colorFilter
-        updateImageHash()
+        updateImageHashAndCache()
     }
 
     /** @return protobuf message */
-    fun toMessage(): ImageMessage =
-        ImageMessage.newBuilder()
-            .setComponentId(componentId)
-            .setImage(imageData?.let { ByteString.copyFrom(toByteArray(it)) })
-            .setContentScale(toContentScale(contentScale))
-            .setColorFilter(toColorFilter(colorFilter))
-            .build()
+    fun toMessage(): ImageMessage {
+        synchronized(lock) {
+            return ImageMessage.newBuilder()
+                .setComponentId(componentId)
+                .setImage(getCompressedData()?.let { ByteString.copyFrom(it) })
+                .setContentScale(toContentScale(contentScale))
+                .setColorFilter(toColorFilter(colorFilter))
+                .build()
+        }
+    }
 
     /** @return protobuf byte array */
     override fun toByteArray(): ByteArray = toMessage().toByteArray()
@@ -66,15 +75,24 @@ class Image private constructor(builder: Builder) : Component(builder) {
     override fun updateComponent(component: Component): Boolean {
         if (component !is Image || componentId != component.componentId) return false
 
-        component.imageData?.let {
-            imageData = component.imageData
-            updateImageHash()
-        }
-
-        contentScale = component.contentScale
-        colorFilter = component.colorFilter
+        withSafeMultiLock(component) { performUpdate(component) }
 
         return true
+    }
+
+    private fun performUpdate(other: Image) {
+        contentScale = other.contentScale
+        colorFilter = other.colorFilter
+
+        if (other.imageData != null) {
+            imageData = other.imageData
+            imageHash = other.imageHash
+            capturedGenerationId = other.capturedGenerationId
+            compressedData = other.compressedData
+            cachedHashCode = other.cachedHashCode
+        } else {
+            cachedHashCode = null
+        }
     }
 
     /**
@@ -88,11 +106,13 @@ class Image private constructor(builder: Builder) : Component(builder) {
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is Image) return false
-        if (
-            !super.equals(other) ||
-                contentScale != other.contentScale ||
-                colorFilter != other.colorFilter
-        ) {
+        if (!super.equals(other)) return false
+
+        return withSafeMultiLock(other) { equalsInternal(other) }
+    }
+
+    private fun equalsInternal(other: Image): Boolean {
+        if (contentScale != other.contentScale || colorFilter != other.colorFilter) {
             return false
         }
 
@@ -103,21 +123,68 @@ class Image private constructor(builder: Builder) : Component(builder) {
         return Arrays.equals(imageHash, other.imageHash)
     }
 
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + contentScale.hashCode()
-        result = 31 * result + colorFilter.hashCode()
-        result = 31 * result + Arrays.hashCode(imageHash)
-        return result
+    private inline fun <T> withSafeMultiLock(other: Image, block: () -> T): T {
+        val h1 = System.identityHashCode(this.lock)
+        val h2 = System.identityHashCode(other.lock)
+
+        return when {
+            h1 < h2 -> synchronized(this.lock) { synchronized(other.lock) { block() } }
+            h1 > h2 -> synchronized(other.lock) { synchronized(this.lock) { block() } }
+            else ->
+                synchronized(TIE_LOCK) {
+                    synchronized(this.lock) { synchronized(other.lock) { block() } }
+                }
+        }
     }
 
-    private fun updateImageHash() {
-        val bitmap = imageData ?: return
-        capturedGenerationId = bitmap.generationId
-        val md = MessageDigest.getInstance(HASH_ALGORITHM)
-        val byteBuffer = ByteBuffer.allocate(bitmap.byteCount)
-        bitmap.copyPixelsToBuffer(byteBuffer)
-        imageHash = md.digest(byteBuffer.array())
+    override fun hashCode(): Int {
+        var cached = cachedHashCode
+        if (cached != null) return cached
+
+        synchronized(lock) {
+            cached = cachedHashCode
+            if (cached != null) return cached
+
+            val currentContentScale = contentScale
+            val currentColorFilter = colorFilter
+            val currentImageHash = imageHash
+
+            var result = super.hashCode()
+            result = 31 * result + currentContentScale.hashCode()
+            result = 31 * result + currentColorFilter.hashCode()
+            result = 31 * result + Arrays.hashCode(currentImageHash)
+            cached = result
+            cachedHashCode = cached
+            return cached
+        }
+    }
+
+    private fun updateImageHashAndCache() {
+        synchronized(lock) {
+            val bitmap = imageData ?: return
+            capturedGenerationId = bitmap.generationId
+            val md = MessageDigest.getInstance(HASH_ALGORITHM)
+            val byteBuffer = ByteBuffer.allocate(bitmap.byteCount)
+            bitmap.copyPixelsToBuffer(byteBuffer)
+            imageHash = md.digest(byteBuffer.array())
+            compressedData = null
+            cachedHashCode = null
+        }
+    }
+
+    private fun getCompressedData(): ByteArray? {
+        var result = compressedData
+        if (result == null) {
+            synchronized(lock) {
+                result = compressedData
+                if (result == null) {
+                    val currentImageData = imageData
+                    result = toByteArray(currentImageData)
+                    compressedData = result
+                }
+            }
+        }
+        return result
     }
 
     /**
@@ -220,6 +287,7 @@ class Image private constructor(builder: Builder) : Component(builder) {
         private const val BITMAP_QUALITY = 100
         private const val BITMAP_OFFSET = 0
         private const val HASH_ALGORITHM = "MD5"
+        private val TIE_LOCK = Any()
 
         /** @return an instance of [Builder] */
         @JvmStatic fun newBuilder(componentId: String) = Builder(componentId)

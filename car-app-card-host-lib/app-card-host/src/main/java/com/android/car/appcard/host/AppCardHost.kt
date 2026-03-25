@@ -39,6 +39,7 @@ import com.android.car.appcard.host.AppCardTimer.UpdateReadyListener
 import com.android.car.appcard.internal.AppCardTransport
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.protobuf.InvalidProtocolBufferException
 import java.util.concurrent.ConcurrentHashMap
@@ -56,6 +57,7 @@ internal constructor(
     private val responseExecutor: Executor,
     private val timerProvider: AppCardTimerProvider,
     private val userProvider: UserProvider,
+    private val executorProvider: ExecutorProvider,
     ipcThreadPoolSize: Int,
 ) : UpdateReadyListener, AppCardObserverCallback {
 
@@ -81,15 +83,21 @@ internal constructor(
         object : UserProvider {
             override fun getCurrentUser() = ActivityManager.getCurrentUser()
         },
+        object : ExecutorProvider {
+            override fun getExecutorService(ipcThreadPoolSize: Int): ListeningExecutorService =
+                MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(ipcThreadPoolSize))
+
+            override fun getScheduledExecutorService(): ScheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor()
+        },
         ipcThreadPoolSize,
     )
 
     private val listeners: MutableSet<AppCardListener>
     private val idBrokerMap: ConcurrentMap<ApplicationIdentifier, BrokerWrapper>
     private val authorityToIdentifierMap: ConcurrentMap<String, ApplicationIdentifier>
-    private val executorService =
-        MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(ipcThreadPoolSize))
-    private val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    private val executorService: ListeningExecutorService
+    private val scheduledExecutorService: ScheduledExecutorService
     private val packageManager: PackageManager
     private val contentResolver: ContentResolver
     private val brokerFactory: BrokerFactory
@@ -108,6 +116,9 @@ internal constructor(
         listeners = HashSet()
         idBrokerMap = ConcurrentHashMap()
         authorityToIdentifierMap = ConcurrentHashMap()
+
+        executorService = executorProvider.getExecutorService(ipcThreadPoolSize)
+        scheduledExecutorService = executorProvider.getScheduledExecutorService()
 
         val expectedBrokerPermission =
             context.resources.getString(com.android.car.appcard.R.string.host_permission)
@@ -203,6 +214,7 @@ internal constructor(
             synchronized(listeners) { listeners.clear() }
 
             closeAllApplicationConnections()
+            executorService.shutdownNow()
             scheduledExecutorService.shutdownNow()
         }
     }
@@ -1057,6 +1069,13 @@ internal constructor(
                 }
             }
         }
+    }
+
+    /** Internal interface to abstract out executors from tests */
+    internal interface ExecutorProvider {
+        fun getExecutorService(ipcThreadPoolSize: Int): ListeningExecutorService
+
+        fun getScheduledExecutorService(): ScheduledExecutorService
     }
 
     /** Internal interface to abstract out timers from tests */

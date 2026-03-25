@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
 internal class AppCardTimer(
@@ -32,6 +33,7 @@ internal class AppCardTimer(
 ) {
     private val componentUpdateStatusMap: ConcurrentMap<String, Boolean>
     private val componentUpdateFutureMap: ConcurrentMap<String, ScheduledFuture<*>>
+    private val lock = Any()
     private var identifier: ApplicationIdentifier? = null
     private var appCardId: String? = null
     private var refreshFuture: ScheduledFuture<*>? = null
@@ -48,7 +50,7 @@ internal class AppCardTimer(
     }
 
     private fun handleImageAppCardUpdate(imageAppCard: ImageAppCard, id: ApplicationIdentifier) {
-        synchronized(lock = this) {
+        synchronized(lock) {
             cancelAllFutures()
 
             componentUpdateStatusMap.clear()
@@ -59,15 +61,21 @@ internal class AppCardTimer(
             imageAppCard.progressBar?.let {
                 componentUpdateStatusMap[it.componentId] = false
                 val componentId = it.componentId
+                val futureRef = AtomicReference<ScheduledFuture<*>>()
                 val future =
                     scheduledExecutorService.schedule(
                         {
-                            componentUpdateStatusMap[componentId] = true
-                            componentUpdateFutureMap.remove(componentId)
+                            synchronized(lock) {
+                                if (componentUpdateFutureMap[componentId] === futureRef.get()) {
+                                    componentUpdateStatusMap[componentId] = true
+                                    componentUpdateFutureMap.remove(componentId)
+                                }
+                            }
                         },
                         fastUpdateRateMs.toLong(),
                         TimeUnit.MILLISECONDS,
                     )
+                futureRef.set(future)
                 componentUpdateFutureMap[componentId] = future
             }
 
@@ -82,7 +90,7 @@ internal class AppCardTimer(
     }
 
     fun resetAppCardTimerAndRequestUpdate() {
-        synchronized(lock = this) {
+        synchronized(lock) {
             appCardId ?: return
             identifier ?: return
 
@@ -94,15 +102,21 @@ internal class AppCardTimer(
 
             componentUpdateStatusMap.keys.forEach(
                 Consumer { componentId: String ->
+                    val futureRef = AtomicReference<ScheduledFuture<*>>()
                     val future =
                         scheduledExecutorService.schedule(
                             {
-                                componentUpdateStatusMap[componentId] = true
-                                componentUpdateFutureMap.remove(componentId)
+                                synchronized(lock) {
+                                    if (componentUpdateFutureMap[componentId] === futureRef.get()) {
+                                        componentUpdateStatusMap[componentId] = true
+                                        componentUpdateFutureMap.remove(componentId)
+                                    }
+                                }
                             },
                             fastUpdateRateMs.toLong(),
                             TimeUnit.MILLISECONDS,
                         )
+                    futureRef.set(future)
                     componentUpdateFutureMap[componentId] = future
                 }
             )
@@ -118,35 +132,43 @@ internal class AppCardTimer(
     }
 
     fun isComponentReadyForUpdate(componentId: String): Boolean {
-        synchronized(lock = this) {
+        synchronized(lock) {
             val defaultValue = false
             return componentUpdateStatusMap.getOrDefault(componentId, defaultValue)
         }
     }
 
     fun destroy() {
-        synchronized(lock = this) {
+        synchronized(lock) {
             cancelAllFutures()
             componentUpdateStatusMap.clear()
         }
     }
 
     fun componentUpdate(componentId: String) {
-        synchronized(lock = this) {
-            if (!componentUpdateStatusMap.containsKey(componentId)) return
+        synchronized(lock) {
+            if (componentUpdateStatusMap[componentId] != true) {
+                return
+            }
 
             componentUpdateStatusMap[componentId] = false
-            componentUpdateFutureMap[componentId]?.cancel(false)
+            componentUpdateFutureMap.remove(componentId)?.cancel(false)
 
+            val futureRef = AtomicReference<ScheduledFuture<*>>()
             val future =
                 scheduledExecutorService.schedule(
                     {
-                        componentUpdateStatusMap[componentId] = true
-                        componentUpdateFutureMap.remove(componentId)
+                        synchronized(lock) {
+                            if (componentUpdateFutureMap[componentId] === futureRef.get()) {
+                                componentUpdateStatusMap[componentId] = true
+                                componentUpdateFutureMap.remove(componentId)
+                            }
+                        }
                     },
                     fastUpdateRateMs.toLong(),
                     TimeUnit.MILLISECONDS,
                 )
+            futureRef.set(future)
             componentUpdateFutureMap[componentId] = future
         }
     }

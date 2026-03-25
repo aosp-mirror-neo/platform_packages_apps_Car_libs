@@ -43,6 +43,8 @@ import com.android.car.appcard.host.ContentProviderBrokerFactory.Companion.APP_C
 import com.android.car.appcard.internal.AppCardTransport
 import com.android.car.appcard.util.ParcelableUtils
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.ListeningExecutorService
+import com.google.common.util.concurrent.MoreExecutors
 import java.util.concurrent.Executor
 import java.util.concurrent.Phaser
 import java.util.concurrent.ScheduledExecutorService
@@ -171,6 +173,14 @@ class AppCardHostTest {
         object : AppCardHost.UserProvider {
             override fun getCurrentUser() = 10
         }
+    private val executorProvider =
+        object : AppCardHost.ExecutorProvider {
+            override fun getExecutorService(ipcThreadPoolSize: Int): ListeningExecutorService =
+                MoreExecutors.newDirectExecutorService()
+
+            override fun getScheduledExecutorService(): ScheduledExecutorService =
+                mock<ScheduledExecutorService>()
+        }
     private lateinit var appCardHost: AppCardHost
 
     @Before
@@ -187,6 +197,7 @@ class AppCardHostTest {
                 responseExecutor,
                 appCardTimerProvider,
                 userProvider,
+                executorProvider,
                 8,
             )
 
