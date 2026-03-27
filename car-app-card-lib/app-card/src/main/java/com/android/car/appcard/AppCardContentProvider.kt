@@ -292,40 +292,45 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
     private fun getMethod(uri: Uri) = uri.pathSegments[0]
 
     final override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
-        synchronized(lock) {
-            var id: String? = null
-            var componentId: String? = null
-            var interactionId: String? = null
-            var appCardContext: AppCardContext? = null
+        try {
+            synchronized(lock) {
+                var id: String? = null
+                var componentId: String? = null
+                var interactionId: String? = null
+                var appCardContext: AppCardContext? = null
 
-            extras?.let {
-                val defaultValue = null
-                id = it.getString(BUNDLE_KEY_APP_CARD_ID, defaultValue)
-                componentId = it.getString(BUNDLE_KEY_APP_CARD_COMPONENT_ID, defaultValue)
-                interactionId = it.getString(BUNDLE_KEY_APP_CARD_INTERACTION_ID, defaultValue)
-                val appCardContextBundle = it.getBundle(BUNDLE_KEY_APP_CARD_CONTEXT)
-                appCardContext = fromBundle(appCardContextBundle)
+                extras?.let {
+                    val defaultValue = null
+                    id = it.getString(BUNDLE_KEY_APP_CARD_ID, defaultValue)
+                    componentId = it.getString(BUNDLE_KEY_APP_CARD_COMPONENT_ID, defaultValue)
+                    interactionId = it.getString(BUNDLE_KEY_APP_CARD_INTERACTION_ID, defaultValue)
+                    val appCardContextBundle = it.getBundle(BUNDLE_KEY_APP_CARD_CONTEXT)
+                    appCardContext = fromBundle(appCardContextBundle)
+                }
+
+                var bundle: Bundle? = null
+                when (method) {
+                    AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE ->
+                        bundle = handleAppCardComponentUpdate(id, componentId)
+
+                    AppCardMessageConstants.MSG_APP_CARD_REMOVED -> removeAppCard(id)
+
+                    AppCardMessageConstants.MSG_APP_CARD_INTERACTION ->
+                        handleInteraction(id, componentId, interactionId)
+
+                    AppCardMessageConstants.MSG_APP_CARD_CONTEXT_UPDATE ->
+                        handleAppCardContextUpdate(id, appCardContext)
+
+                    AppCardMessageConstants.MSG_CLOSE_PROVIDER -> handleClose()
+
+                    else -> Log.e(TAG, "Unrecognized method: $method")
+                }
+
+                return bundle
             }
-
-            var bundle: Bundle? = null
-            when (method) {
-                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE ->
-                    bundle = handleAppCardComponentUpdate(id, componentId)
-
-                AppCardMessageConstants.MSG_APP_CARD_REMOVED -> removeAppCard(id)
-
-                AppCardMessageConstants.MSG_APP_CARD_INTERACTION ->
-                    handleInteraction(id, componentId, interactionId)
-
-                AppCardMessageConstants.MSG_APP_CARD_CONTEXT_UPDATE ->
-                    handleAppCardContextUpdate(id, appCardContext)
-
-                AppCardMessageConstants.MSG_CLOSE_PROVIDER -> handleClose()
-
-                else -> Log.e(TAG, "Unrecognized method: $method")
-            }
-
-            return bundle
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception occurred during call ($method)", e)
+            return null
         }
     }
 

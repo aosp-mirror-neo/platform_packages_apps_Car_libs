@@ -58,13 +58,17 @@ internal class AppCardTimer(
 
             imageAppCard.progressBar?.let {
                 componentUpdateStatusMap[it.componentId] = false
+                val componentId = it.componentId
                 val future =
                     scheduledExecutorService.schedule(
-                        { componentUpdateStatusMap[it.componentId] = true },
+                        {
+                            componentUpdateStatusMap[componentId] = true
+                            componentUpdateFutureMap.remove(componentId)
+                        },
                         fastUpdateRateMs.toLong(),
                         TimeUnit.MILLISECONDS,
                     )
-                componentUpdateFutureMap[it.componentId] = future
+                componentUpdateFutureMap[componentId] = future
             }
 
             refreshFuture =
@@ -92,7 +96,10 @@ internal class AppCardTimer(
                 Consumer { componentId: String ->
                     val future =
                         scheduledExecutorService.schedule(
-                            { componentUpdateStatusMap[componentId] = true },
+                            {
+                                componentUpdateStatusMap[componentId] = true
+                                componentUpdateFutureMap.remove(componentId)
+                            },
                             fastUpdateRateMs.toLong(),
                             TimeUnit.MILLISECONDS,
                         )
@@ -133,7 +140,10 @@ internal class AppCardTimer(
 
             val future =
                 scheduledExecutorService.schedule(
-                    { componentUpdateStatusMap[componentId] = true },
+                    {
+                        componentUpdateStatusMap[componentId] = true
+                        componentUpdateFutureMap.remove(componentId)
+                    },
                     fastUpdateRateMs.toLong(),
                     TimeUnit.MILLISECONDS,
                 )

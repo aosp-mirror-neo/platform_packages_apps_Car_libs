@@ -25,7 +25,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ProviderInfo
-import android.os.Build
 import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.UserHandle
@@ -84,6 +83,7 @@ internal constructor(
 
     private val listeners: MutableSet<AppCardListener>
     private val idBrokerMap: ConcurrentMap<ApplicationIdentifier, BrokerWrapper>
+    private val authorityToIdentifierMap: ConcurrentMap<String, ApplicationIdentifier>
     private val executorService = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool())
     private val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val packageManager: PackageManager
@@ -103,6 +103,7 @@ internal constructor(
 
         listeners = HashSet()
         idBrokerMap = ConcurrentHashMap()
+        authorityToIdentifierMap = ConcurrentHashMap()
 
         val expectedBrokerPermission =
             context.resources.getString(com.android.car.appcard.R.string.host_permission)
@@ -116,6 +117,7 @@ internal constructor(
             )
         brokerFactory.connectToAllCompatibleApplications().forEach {
             idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+            authorityToIdentifierMap[it.key.authority] = it.key
         }
 
         setupAppChangeReceiver()
@@ -164,6 +166,7 @@ internal constructor(
         synchronized(idBrokerMap) {
             brokerFactory.refreshCompatibleApplication(idBrokerMap.keys).forEach {
                 idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+                authorityToIdentifierMap[it.key.authority] = it.key
             }
         }
     }
@@ -183,6 +186,7 @@ internal constructor(
             )
 
             idBrokerMap.clear()
+            authorityToIdentifierMap.clear()
         }
     }
 
@@ -330,6 +334,18 @@ internal constructor(
 
             brokerWrapper.activeAppCardMap.clear()
             idBrokerMap.remove(identifier)
+            authorityToIdentifierMap.remove(identifier.authority)
+
+            synchronized(listeners) {
+                listeners.forEach(
+                    Consumer { appCardListener: AppCardListener ->
+                        appCardListener.onProviderRemoved(
+                            identifier.packageName,
+                            identifier.authority,
+                        )
+                    }
+                )
+            }
         }
     }
 
@@ -800,20 +816,20 @@ internal constructor(
     @VisibleForTesting
     internal fun handlePackageRemovedOrDisabled(packageName: String, authority: String?) {
         synchronized(idBrokerMap) {
-            var isRemoved = false
-            idBrokerMap.entries.removeIf { (key, value) ->
-                authority?.let { if (!key.containsAuthority(it)) return@removeIf false }
+            val wasRemoved =
+                idBrokerMap.entries.removeIf { (key, value) ->
+                    authority?.let { if (!key.containsAuthority(it)) return@removeIf false }
 
-                if (!key.containsPackage(packageName)) return@removeIf false
+                    if (!key.containsPackage(packageName)) return@removeIf false
 
-                value.broker.close()
-                value.activeAppCardMap.clear()
-                isRemoved = true
+                    value.broker.close()
+                    value.activeAppCardMap.clear()
+                    authorityToIdentifierMap.remove(key.authority)
 
-                true
-            }
+                    true
+                }
 
-            if (!isRemoved) return
+            if (!wasRemoved) return
 
             synchronized(listeners) {
                 listeners.forEach(
@@ -914,11 +930,26 @@ internal constructor(
     @VisibleForTesting
     internal fun handleUserChange() {
         synchronized(idBrokerMap) {
+            val identifiers = idBrokerMap.keys.toList()
             closeAllApplicationConnections()
             currentUser = userProvider.getCurrentUser()
-            idBrokerMap.clear()
+
+            synchronized(listeners) {
+                identifiers.forEach { identifier ->
+                    listeners.forEach(
+                        Consumer { appCardListener: AppCardListener ->
+                            appCardListener.onProviderRemoved(
+                                identifier.packageName,
+                                identifier.authority,
+                            )
+                        }
+                    )
+                }
+            }
+
             brokerFactory.connectToAllCompatibleApplications().forEach {
                 idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+                authorityToIdentifierMap[it.key.authority] = it.key
             }
         }
     }
@@ -1002,32 +1033,14 @@ internal constructor(
         componentId: String,
     ) {
         synchronized(idBrokerMap) {
-            val identifier =
-                idBrokerMap.keys
-                    .stream()
-                    .filter { i: ApplicationIdentifier -> i.containsAuthority(authority) }
-                    .findFirst()
+            val identifier = authorityToIdentifierMap[authority] ?: return
 
-            val isEmpty =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    identifier.isEmpty
-                } else {
-                    !identifier.isPresent
-                }
-            if (isEmpty) return
-
-            val brokerWrapper = idBrokerMap[identifier.get()] ?: return
+            val brokerWrapper = idBrokerMap[identifier] ?: return
             val cacheTimer = brokerWrapper.activeAppCardMap[id] ?: return
 
             if (!cacheTimer.appCardTimer.isComponentReadyForUpdate(componentId)) return
 
-            retrieveAppCardComponentUpdate(
-                brokerWrapper,
-                cacheTimer,
-                identifier.get(),
-                id,
-                componentId,
-            )
+            retrieveAppCardComponentUpdate(brokerWrapper, cacheTimer, identifier, id, componentId)
         }
     }
 
