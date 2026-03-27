@@ -18,10 +18,19 @@
 <resources>
     <color name="car_tab_selected_color">@color/car_tab_selected_color_dark</color>
     <color name="car_tab_unselected_color">@color/car_tab_unselected_color_dark</color>
+
+    <color name="background_image_scrim_30pc_bg_color">#4D000000</color>
+    <color name="background_image_scrim_50pc_bg_color">#80000000</color>
+    <color name="background_image_scrim_70pc_bg_color">#B3000000</color>
+    <color name="background_image_scrim_80pc_bg_color">#CC000000</color>
+    <color name="background_image_scrim_96pc_bg_color">#F5000000</color>
+
     <color name="scrim_overlay_color">#D6000000</color>
 
     <color name="primary_app_icon_color">#E0FFFFFF</color>
     <color name="secondary_app_icon_color">#99FFFFFF</color>
 
     <color name="app_bar_background_color">#EB000000</color>
+
+    <color name="control_bar_button_background_color">#66ffffff</color>
 </resources>
