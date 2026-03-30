@@ -20,9 +20,9 @@
         <shape>
             <gradient
                 android:angle="90"
-                android:startColor="#F5000000"
+                android:startColor="@color/background_image_scrim_96pc_bg_color"
                 android:centerColor="@android:color/transparent"
-                android:endColor="#F5000000"/>
+                android:endColor="@color/background_image_scrim_96pc_bg_color"/>
         </shape>
     </item>
     <item>
@@ -31,8 +31,8 @@
                 android:angle="0"
                 android:centerX="0.48"
                 android:startColor="@android:color/transparent"
-                android:centerColor="@android:color/black"
-                android:endColor="@android:color/black" />
+                android:centerColor="?android:attr/colorBackground"
+                android:endColor="?android:attr/colorBackground" />
         </shape>
     </item>
     <item>
@@ -41,13 +41,14 @@
                 android:angle="0"
                 android:centerX="0.38"
                 android:startColor="@android:color/transparent"
-                android:centerColor="#B3000000"
-                android:endColor="#B3000000" />
+                android:centerColor="@color/background_image_scrim_70pc_bg_color"
+                android:endColor="@color/background_image_scrim_70pc_bg_color" />
         </shape>
+        <!-- -->
     </item>
     <item>
         <shape>
-            <solid android:color="@color/background_image_30p_black"/>
+            <solid android:color="@color/background_image_scrim_30pc_bg_color"/>
         </shape>
     </item>
 </layer-list>

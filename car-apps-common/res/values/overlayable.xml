@@ -16,6 +16,12 @@ limitations under the License.-->
       <item type="bool" name="use_media_source_color_for_minimized_progress_bar"/>
 
       <item type="color" name="action_button_icon_tint" />
+      <item type="color" name="background_image_scrim_30pc_bg_color" />
+      <item type="color" name="background_image_scrim_50pc_bg_color" />
+      <item type="color" name="background_image_scrim_70pc_bg_color" />
+      <item type="color" name="background_image_scrim_80pc_bg_color" />
+      <item type="color" name="background_image_scrim_96pc_bg_color" />
+      <item type="color" name="control_bar_button_background_color" />
 
       <item type="dimen" name="control_bar_button_size" />
       <item type="dimen" name="control_bar_button_padding" />
