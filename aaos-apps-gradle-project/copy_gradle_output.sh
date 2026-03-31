@@ -83,7 +83,7 @@ cp $GRADLE_OUTPUT_DIR/car-radio-app/outputs/apk/unbundled/release/car-radio-app-
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformAosp/release/car-bugreport-app-platformAosp-release.apk $1/CarBugReportApp_aosp_cert.apk
 check_status $?
-cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/default/release/driver-ui-default-release-unsigned.apk $1/DriverUI.apk
+cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/platformAosp/debug/driver-ui-platformAosp-debug.apk $1/DriverUI.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/platformAosp/release/driver-ui-platformAosp-release.apk $1/driver-ui-platform-release.apk
 check_status $?
