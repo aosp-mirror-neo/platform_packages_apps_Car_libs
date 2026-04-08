@@ -65,6 +65,8 @@ cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/platformAosp/release/car-media-a
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/prod/release/car-messenger-app-prod-release.apk $1/CarMessengerApp.apk
 check_status $?
+cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/platformAosp/release/car-messenger-app-platformAosp-release.apk $1/CarMessengerApp_aosp_cert.apk
+check_status $?
 cp $GRADLE_OUTPUT_DIR/PaintBooth/outputs/apk/unbundled/release/PaintBooth-unbundled-release.apk $1/PaintBooth.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/oem-token-shared-lib/outputs/apk/unbundled/release/oem-token-shared-lib-unbundled-release.apk $1/oem-token-shared-lib.apk
@@ -106,6 +108,8 @@ if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformGoogle/release/car-bugreport-app-platformGoogle-release.apk $1/CarBugReportApp.apk
   check_status $?
   cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/platformGoogle/release/car-sensitiveapplock-app-platformGoogle-release.apk $1/SensitiveAppLock.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/platformGoogle/release/car-messenger-app-platformGoogle-release.apk $1/CarMessengerApp_google_cert.apk
   check_status $?
 fi
 
