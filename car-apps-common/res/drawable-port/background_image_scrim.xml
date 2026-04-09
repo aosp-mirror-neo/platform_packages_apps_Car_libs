@@ -21,8 +21,8 @@
             <gradient
                 android:angle="90"
                 android:centerY="0.3"
-                android:startColor="@android:color/black"
-                android:centerColor="@android:color/black"
+                android:startColor="?android:attr/colorBackground"
+                android:centerColor="?android:attr/colorBackground"
                 android:endColor="@android:color/transparent"/>
         </shape>
     </item>
@@ -31,17 +31,18 @@
             <gradient
                 android:angle="90"
                 android:centerY="0.48"
-                android:startColor="#80000000"
-                android:centerColor="#80000000"
+                android:startColor="#FFFF0000"
+                android:centerColor="#FFFF0000"
                 android:endColor="@android:color/transparent"/>
         </shape>
+        <!-- @color/background_image_scrim_50pc_bg_color-->
     </item>
     <item>
         <shape>
             <gradient
                 android:angle="270"
                 android:centerY="0.64"
-                android:startColor="#CC000000"
+                android:startColor="@color/background_image_scrim_80pc_bg_color"
                 android:centerColor="@android:color/transparent"/>
         </shape>
     </item>

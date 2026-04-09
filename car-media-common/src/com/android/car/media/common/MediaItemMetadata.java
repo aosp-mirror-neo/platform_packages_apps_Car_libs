@@ -445,6 +445,14 @@ public class MediaItemMetadata {
         }
     }
 
+    /**
+     * Clears the static cache of placeholder drawables. This should be called
+     * when the application's theme or configuration changes.
+     */
+    public static void clearPlaceholderCache() {
+        sPlaceHolders.clear();
+    }
+
     private static List<Drawable> getPlaceHolders(PlaceholderType type, Context context) {
         List<Drawable> placeHolders = sPlaceHolders.get(type);
         if (placeHolders == null) {
@@ -457,7 +465,11 @@ public class MediaItemMetadata {
 
             placeHolders = new ArrayList<>(placeholderImages.length());
             for (int i = 0; i < placeholderImages.length(); i++) {
-                placeHolders.add(placeholderImages.getDrawable(i));
+                int resId = placeholderImages.getResourceId(i, 0);
+                if (resId != 0) {
+                    // Use the context to get proper theming.
+                    placeHolders.add(context.getDrawable(resId));
+                }
             }
             placeholderImages.recycle();
             sPlaceHolders.put(type, placeHolders);
