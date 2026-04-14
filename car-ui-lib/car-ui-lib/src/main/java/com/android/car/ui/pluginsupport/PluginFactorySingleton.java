@@ -255,6 +255,14 @@ public final class PluginFactorySingleton {
             Log.e(TAG, "Something went wrong when invoking getPluginFactory: ", e);
             sInstance = new PluginFactoryStub();
             return;
+        } catch (IncompatibleClassChangeError e) {
+            Log.e(TAG, "Something went wrong when invoking getPluginFactory: ", e);
+            sInstance = new PluginFactoryStub();
+            return;
+        } catch (Throwable e) {
+            Log.e(TAG, "Something went wrong when invoking getPluginFactory: ", e);
+            sInstance = new PluginFactoryStub();
+            return;
         }
 
         Log.i(TAG, "Loaded plugin " + pluginPackageName
