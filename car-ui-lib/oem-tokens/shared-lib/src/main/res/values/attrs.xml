@@ -45,6 +45,12 @@
     <attr name="colorBlueContainer" format="color" />
     <attr name="colorOnBlueContainer" format="color" />
 
+    <!-- Red color palette -->
+    <attr name="colorRed" format="color" />
+    <attr name="colorOnRed" format="color" />
+    <attr name="colorRedContainer" format="color" />
+    <attr name="colorOnRedContainer" format="color" />
+
     <!-- Green color palette -->
     <attr name="colorGreen" format="color" />
     <attr name="colorOnGreen" format="color" />

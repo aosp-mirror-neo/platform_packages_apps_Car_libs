@@ -166,6 +166,10 @@
         <item name="oemColorOnBlue">@color/oem_color_on_blue</item>
         <item name="oemColorBlueContainer">@color/oem_color_blue_container</item>
         <item name="oemColorOnBlueContainer">@color/oem_color_on_blue_container</item>
+        <item name="oemColorRed">@color/oem_color_red</item>
+        <item name="oemColorOnRed">@color/oem_color_on_red</item>
+        <item name="oemColorRedContainer">@color/oem_color_red_container</item>
+        <item name="oemColorOnRedContainer">@color/oem_color_on_blue_container</item>
         <item name="oemColorGreen">@color/oem_color_green</item>
         <item name="oemColorOnGreen">@color/oem_color_on_green</item>
         <item name="oemColorGreenContainer">@color/oem_color_green_container</item>
@@ -215,6 +219,10 @@
         <item name="oemColorOnBlue">@color/oem_color_on_blue_dark</item>
         <item name="oemColorBlueContainer">@color/oem_color_blue_container_dark</item>
         <item name="oemColorOnBlueContainer">@color/oem_color_on_blue_container_dark</item>
+        <item name="oemColorRed">@color/oem_color_red_dark</item>
+        <item name="oemColorOnRed">@color/oem_color_on_red_dark</item>
+        <item name="oemColorRedContainer">@color/oem_color_red_container_dark</item>
+        <item name="oemColorOnRedContainer">@color/oem_color_on_red_container_dark</item>
         <item name="oemColorGreen">@color/oem_color_green_dark</item>
         <item name="oemColorOnGreen">@color/oem_color_on_green_dark</item>
         <item name="oemColorGreenContainer">@color/oem_color_green_container_dark</item>
@@ -264,6 +272,10 @@
         <item name="oemColorOnBlue">?com.android.oem.tokens:attr/colorOnBlue</item>
         <item name="oemColorBlueContainer">?com.android.oem.tokens:attr/colorBlueContainer</item>
         <item name="oemColorOnBlueContainer">?com.android.oem.tokens:attr/colorOnBlueContainer</item>
+        <item name="oemColorRed">?com.android.oem.tokens:attr/colorRed</item>
+        <item name="oemColorOnRed">?com.android.oem.tokens:attr/colorOnRed</item>
+        <item name="oemColorRedContainer">?com.android.oem.tokens:attr/colorRedContainer</item>
+        <item name="oemColorOnRedContainer">?com.android.oem.tokens:attr/colorOnRedContainer</item>
         <item name="oemColorGreen">?com.android.oem.tokens:attr/colorGreen</item>
         <item name="oemColorOnGreen">?com.android.oem.tokens:attr/colorOnGreen</item>
         <item name="oemColorGreenContainer">?com.android.oem.tokens:attr/colorGreenContainer</item>
@@ -533,6 +545,10 @@
         <item name="com.android.oem.tokens:colorOnBlue">@color/oem_color_on_blue</item>
         <item name="com.android.oem.tokens:colorBlueContainer">@color/oem_color_blue_container</item>
         <item name="com.android.oem.tokens:colorOnBlueContainer">@color/oem_color_on_blue_container</item>
+        <item name="com.android.oem.tokens:colorRed">@color/oem_color_red</item>
+        <item name="com.android.oem.tokens:colorOnRed">@color/oem_color_on_red</item>
+        <item name="com.android.oem.tokens:colorRedContainer">@color/oem_color_red_container</item>
+        <item name="com.android.oem.tokens:colorOnRedContainer">@color/oem_color_on_red_container</item>
         <item name="com.android.oem.tokens:colorGreen">@color/oem_color_green</item>
         <item name="com.android.oem.tokens:colorOnGreen">@color/oem_color_on_green</item>
         <item name="com.android.oem.tokens:colorGreenContainer">@color/oem_color_green_container</item>
@@ -582,6 +598,10 @@
         <item name="com.android.oem.tokens:colorOnBlue">@color/oem_color_on_blue_dark</item>
         <item name="com.android.oem.tokens:colorBlueContainer">@color/oem_color_blue_container_dark</item>
         <item name="com.android.oem.tokens:colorOnBlueContainer">@color/oem_color_on_blue_container_dark</item>
+        <item name="com.android.oem.tokens:colorRed">@color/oem_color_red_dark</item>
+        <item name="com.android.oem.tokens:colorOnRed">@color/oem_color_on_red_dark</item>
+        <item name="com.android.oem.tokens:colorRedContainer">@color/oem_color_red_container_dark</item>
+        <item name="com.android.oem.tokens:colorOnRedContainer">@color/oem_color_on_red_container_dark</item>
         <item name="com.android.oem.tokens:colorGreen">@color/oem_color_green_dark</item>
         <item name="com.android.oem.tokens:colorOnGreen">@color/oem_color_on_green_dark</item>
         <item name="com.android.oem.tokens:colorGreenContainer">@color/oem_color_green_container_dark</item>
@@ -605,70 +625,84 @@
 
     <style name="TextAppearance.Display.Large">
         <item name="android:textSize">56sp</item>
+        <item name="android:lineHeight">64sp</item>
     </style>
 
     <style name="TextAppearance.Display.Medium">
         <item name="android:textSize">44sp</item>
+        <item name="android:lineHeight">52sp</item>
     </style>
 
     <style name="TextAppearance.Display.Small">
         <item name="android:textSize">36sp</item>
+        <item name="android:lineHeight">44sp</item>
     </style>
 
     <style name="TextAppearance.Headline" parent="BaseTextAppearance" />
 
     <style name="TextAppearance.Headline.Large">
         <item name="android:textSize">46sp</item>
+        <item name="android:lineHeight">58sp</item>
     </style>
 
     <style name="TextAppearance.Headline.Medium">
         <item name="android:textSize">40sp</item>
+        <item name="android:lineHeight">52sp</item>
     </style>
 
     <style name="TextAppearance.Headline.Small">
         <item name="android:textSize">36sp</item>
+        <item name="android:lineHeight">44sp</item>
     </style>
 
     <style name="TextAppearance.Title" parent="BaseTextAppearance" />
 
     <style name="TextAppearance.Title.Large">
         <item name="android:textSize">32sp</item>
+        <item name="android:lineHeight">40sp</item>
     </style>
 
     <style name="TextAppearance.Title.Medium">
         <item name="android:textSize">28sp</item>
+        <item name="android:lineHeight">36sp</item>
     </style>
 
     <style name="TextAppearance.Title.Small">
         <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">32sp</item>
     </style>
 
     <style name="TextAppearance.Label" parent="BaseTextAppearance" />
 
     <style name="TextAppearance.Label.Large">
         <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">32sp</item>
     </style>
 
     <style name="TextAppearance.Label.Medium">
         <item name="android:textSize">22sp</item>
+        <item name="android:lineHeight">28sp</item>
     </style>
 
     <style name="TextAppearance.Label.Small">
         <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">24sp</item>
     </style>
 
     <style name="TextAppearance.Body" parent="BaseTextAppearance" />
 
     <style name="TextAppearance.Body.Large">
         <item name="android:textSize">32sp</item>
+        <item name="android:lineHeight">40sp</item>
     </style>
 
     <style name="TextAppearance.Body.Medium">
         <item name="android:textSize">28sp</item>
+        <item name="android:lineHeight">36sp</item>
     </style>
 
     <style name="TextAppearance.Body.Small">
         <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">32sp</item>
     </style>
 </resources>
-

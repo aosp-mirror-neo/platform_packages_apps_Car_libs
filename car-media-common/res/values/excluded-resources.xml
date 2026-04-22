@@ -81,8 +81,6 @@
     <!-- Resources defined in apps that use car-media-common and are duplicated in car-media-common overlayable.xml
     <item type="color" name="media_button_tint"/>
     <item type="color" name="minimized_progress_bar_background"/>-->
-    <!-- Color used on media control buttons -->
-    <color name="media_button_tint">#FFFFFFFF</color>
     <!-- Color used on the minimized progress bar background -->
     <color name="minimized_progress_bar_background">#464A4D</color>
 </resources>

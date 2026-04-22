@@ -35,8 +35,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.android.car.ui.R;
-import com.android.car.ui.appstyledview.AppStyledViewController;
-import com.android.car.ui.appstyledview.AppStyledViewControllerImpl;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.preference.CarUiPreferenceViewStub;
@@ -198,11 +196,7 @@ public final class PluginFactoryStub implements PluginFactory {
         return CarUiPreferenceViewStub.createCarUiPreferenceView(sourceContext, attrs);
     }
 
-    @NonNull
-    @Override
-    public AppStyledViewController createAppStyledView(@NonNull Context activityContext) {
-        return new AppStyledViewControllerImpl(activityContext);
-    }
+
 
     /**
      * InsetsUpdater waits for layout changes, and when there is one, calculates the appropriate

@@ -137,11 +137,7 @@ public class Token {
 
         String sharedLibName = getTokenSharedLibraryName();
 
-        int useOemTokenId = context.getResources().getIdentifier("enable_oem_tokens", "bool",
-                sharedLibName);
-        boolean useOemToken = useOemTokenId != 0 && context.getResources().getBoolean(
-                useOemTokenId);
-
+        boolean useOemToken = isOemStyleOptedIn(context);
         if (useOemToken) {
             int oemStyleOverride = context.getResources().getIdentifier("OemStyle",
                     "style", sharedLibName);
@@ -311,8 +307,12 @@ public class Token {
     public static boolean isOemStyled(Context context, @AttrRes int attr) {
         context = context.getApplicationContext();
         int oemStyleOverride = context.getResources().getIdentifier("OemStyle",
-                "style", Token.getTokenSharedLibraryName());
+                "style", getTokenSharedLibraryName());
         if (oemStyleOverride == 0) {
+            return false;
+        }
+
+        if (!isOemStyleOptedIn(context)) {
             return false;
         }
 
@@ -335,6 +335,12 @@ public class Token {
         libAttributes.recycle();
         sharedLibAttributes.recycle();
         return isOemStyled;
+    }
+
+    private static boolean isOemStyleOptedIn(Context context) {
+        int useOemTokenId = context.getResources().getIdentifier("enable_oem_tokens", "bool",
+                getTokenSharedLibraryName());
+        return useOemTokenId != 0 && context.getResources().getBoolean(useOemTokenId);
     }
 
     private static boolean checkContextIsOemStyled(@NonNull Context context) {

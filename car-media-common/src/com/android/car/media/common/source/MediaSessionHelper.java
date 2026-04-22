@@ -93,6 +93,7 @@ public class MediaSessionHelper extends MediaController.Callback {
     private PackageManager mPackageManager;
     @Nullable
     private final SessionProvider mSessionProvider;
+    private final boolean mIgnoreBrowser;
 
     /**
      *  Returns the singleton.
@@ -154,9 +155,14 @@ public class MediaSessionHelper extends MediaController.Callback {
         void registerActiveSessionsListener(MediaSessionManager manager, Executor executor,
                 MediaSessionManager.OnActiveSessionsChangedListener listener);
 
+        /** Returns the shared preference file name to use for saving state. */
+        default String getSharedPrefName() {
+            return SHARED_PREF;
+        }
     }
 
-    private static InputFactory createInputFactory(@NonNull Context appContext) {
+    private static InputFactory createInputFactory(@NonNull Context appContext,
+            boolean ignoreBrowser) {
         return new InputFactory() {
 
             @Override
@@ -176,7 +182,7 @@ public class MediaSessionHelper extends MediaController.Callback {
                 MediaControllerCompat newMediaController =
                         new MediaControllerCompat(appContext, token);
 
-                return MediaSource.create(appContext, newMediaController);
+                return MediaSource.create(appContext, newMediaController, ignoreBrowser);
             }
 
             @Override
@@ -197,7 +203,7 @@ public class MediaSessionHelper extends MediaController.Callback {
 
     @Deprecated
     private MediaSessionHelper(@NonNull Context appContext) {
-        this(appContext, null, createInputFactory(appContext));
+        this(appContext, null, createInputFactory(appContext, /* ignoreBrowser= */ false));
     }
 
     /**
@@ -205,38 +211,57 @@ public class MediaSessionHelper extends MediaController.Callback {
      */
     public MediaSessionHelper(@NonNull Context context,
             @Nullable NotificationProvider notificationProvider) {
-        this(context, notificationProvider, createInputFactory(context));
+        this(context, notificationProvider,
+                createInputFactory(context, /* ignoreBrowser= */ false));
     }
 
     @VisibleForTesting
     MediaSessionHelper(Context context, @Nullable NotificationProvider notificationProvider,
             InputFactory inputFactory) {
-        this(context, notificationProvider, inputFactory, /* sessionProvider= */ null);
+        this(context, notificationProvider, inputFactory, /* sessionProvider= */ null,
+             /* ignoreBrowser= */ false);
     }
 
 
     /**
      * Creates a new class instance with a session provider.
      */
-    MediaSessionHelper(@NonNull Context context,
+    public MediaSessionHelper(@NonNull Context context,
             @Nullable NotificationProvider notificationProvider,
             @Nullable SessionProvider sessionProvider) {
-        this(context, notificationProvider, createInputFactory(context), sessionProvider);
+        this(context, notificationProvider, sessionProvider, /* ignoreBrowser= */ false);
+    }
+
+    /**
+     * Creates a new class instance with a session provider and ignoreBrowser flag.
+     */
+    public MediaSessionHelper(@NonNull Context context,
+            @Nullable NotificationProvider notificationProvider,
+            @Nullable SessionProvider sessionProvider,
+            boolean ignoreBrowser) {
+        this(context, notificationProvider, createInputFactory(context, ignoreBrowser),
+                sessionProvider, ignoreBrowser);
     }
 
     @VisibleForTesting
     MediaSessionHelper(Context context,
             @Nullable NotificationProvider notificationProvider,
             InputFactory inputFactory,
-            @Nullable SessionProvider sessionProvider) {
+            @Nullable SessionProvider sessionProvider,
+            boolean ignoreBrowser) {
         mContext = new WeakReference<>(context);
         mPackageManager = context.getPackageManager();
         mNotificationProvider = notificationProvider;
         mInputFactory = inputFactory;
         mSessionProvider = sessionProvider;
+        mIgnoreBrowser = ignoreBrowser;
         // Get application shared preferences if available
-        context = context.getApplicationContext();
-        mSharedPrefs = context.getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
+        String sharedPrefFileName = SHARED_PREF;
+        if (mSessionProvider != null) {
+            sharedPrefFileName = mSessionProvider.getSharedPrefName();
+        }
+        mSharedPrefs = context.getApplicationContext()
+                .getSharedPreferences(sharedPrefFileName, Context.MODE_PRIVATE);
         // Register our listener to be notified of changes in the active media sessions.
         mMediaSessionManager = mInputFactory.getMediaSessionManager(mContext.get());
         if (mMediaSessionManager == null) {
@@ -420,7 +445,8 @@ public class MediaSessionHelper extends MediaController.Callback {
                 // Don't change default values
                 return;
             }
-            savedMediaSource = createSavedMediaSource(savedMediaSourceName);
+            savedMediaSource = createSavedMediaSource(savedMediaSourceName,
+                    activeOrPausedMediaControllers);
             savedMediaSource = maybeReplacePrimaryMediaSource(savedMediaSource);
             mPrimaryMediaSource.setValue(savedMediaSource);
         } else {
@@ -437,15 +463,61 @@ public class MediaSessionHelper extends MediaController.Callback {
         }
     }
 
-    private MediaSource createSavedMediaSource(String savedMediaSourceName) {
+    private MediaSource createSavedMediaSource(String savedMediaSourceName,
+            List<MediaController> activeOrPausedControllers) {
+        String packageName = savedMediaSourceName;
         ComponentName componentName = ComponentName.unflattenFromString(savedMediaSourceName);
         if (componentName != null) {
-            // Initialize using MBS
-            return MediaSource.create(mContext.get(), componentName);
-        } else {
-            // Initialize using package name
-            return MediaSource.create(mContext.get(), savedMediaSourceName);
+            packageName = componentName.getPackageName();
         }
+
+        if (!mIgnoreBrowser && componentName != null) {
+            // If we are not ignoring the browser service and we have a component name, we should
+            // use it to create the media source.
+            // This is preferred over using an existing MediaController because we want to make sure
+            // we are connecting to the browser service if possible.
+            return MediaSource.create(mContext.get(), componentName);
+        }
+
+        MediaControllerCompat controller = findMatchingMediaController(packageName,
+                activeOrPausedControllers);
+
+        if (controller == null) {
+            // If the media controller is not in the active or paused list, we should check the
+            // active sessions.
+            List<MediaController> activeSessions = getActiveSessions();
+            controller = findMatchingMediaController(packageName, activeSessions);
+
+        }
+
+        if (controller != null) {
+            // Initialize using any existing media controller
+            // If we have a component name, pass it down so it can be used for icon/label lookup
+            // even if ignoreBrowser is true.
+            return MediaSource.create(mContext.get(), controller, componentName,
+                    mIgnoreBrowser);
+        }
+
+        if (componentName != null) {
+            // Initialize using MBS component name
+            // This is reached if ignoreBrowser is true and no controller was found.
+            return MediaSource.create(mContext.get(), componentName, mIgnoreBrowser);
+        }
+
+        // Initialize using package name
+        return MediaSource.create(mContext.get(), packageName);
+    }
+
+    private MediaControllerCompat findMatchingMediaController(String packageName,
+            List<MediaController> activeOrPausedControllers) {
+        for (MediaController controller : activeOrPausedControllers) {
+            if (TextUtils.equals(packageName, controller.getPackageName())) {
+                MediaSessionCompat.Token token = MediaSessionCompat.Token.fromToken(
+                        controller.getSessionToken());
+                return new MediaControllerCompat(mContext.get(), token);
+            }
+        }
+        return null;
     }
 
     private void saveLastActiveMediaSource(MediaSource mediaSource) {

@@ -34,7 +34,7 @@
     <color name="fab_spinner_indeterminate_color">@color/media_source_default_color</color>
 
     <!-- Color used on media control buttons -->
-    <color name="media_button_tint_disabled">#80FFFFFF</color>
+    <color name="media_button_tint_disabled">#80181c1f</color>
 
     <!--  Default color for ContentFormatView  -->
     <color name="default_logoTint">#FFFFFF</color>

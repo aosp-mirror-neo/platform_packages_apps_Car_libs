@@ -22,6 +22,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
@@ -32,10 +35,12 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.service.media.MediaBrowserService;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.car.apps.common.IconCropper;
 import com.android.car.media.common.R;
 import com.android.car.testing.common.TestLifecycleOwner;
 
@@ -43,6 +48,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -145,5 +151,79 @@ public class MediaSourceTest {
     private void mockIsLegacyApp(boolean isLegacyApp) {
         when(mMockPackageManager.getLaunchIntentForPackage(eq(TEST_MBS_PKG)))
                 .thenReturn(isLegacyApp ? null : new Intent());
+    }
+    @Test
+    public void launchActivity_launchMediaApp_fallbackToCompatAction() {
+        // Prepare mock context and package manager
+        String packageName = TEST_MBS_PKG;
+        // Create icon cropper mock
+        IconCropper mockIconCropper = mock(IconCropper.class);
+        MediaSource mediaSource = new MediaSource(TEST_MBS_CN, null, null, packageName,
+                "DisplayName", mMockContext.getDrawable(android.R.drawable.sym_def_app_icon),
+                mockIconCropper, mMockPackageManager);
+
+        // Mock no launcher intent
+        when(mMockPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(null);
+
+
+        // Mock getPendingIntent returning null (implied by null browseService and
+        // null sessionActivity)
+        // MediaSource constructor initializes with nulls if passed null
+
+        // Mock queryIntentServices for standard action -> empty
+        Intent standardIntent = new Intent(MediaBrowserService.SERVICE_INTERFACE);
+        standardIntent.setPackage(packageName);
+
+        List<ResolveInfo> resolveInfos = new ArrayList<>();
+        ResolveInfo info = new ResolveInfo();
+        info.serviceInfo = new ServiceInfo();
+        info.serviceInfo.packageName = packageName;
+        info.serviceInfo.name = TEST_MBS_CLS;
+        resolveInfos.add(info);
+
+        when(mMockPackageManager.queryIntentServices(
+                refEq(standardIntent, "extras"),
+                eq(PackageManager.GET_RESOLVED_FILTER)))
+                .thenReturn(resolveInfos);
+
+        // Act
+        mediaSource.launchActivity(mMockContext, null);
+
+        // Assert
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext).startActivity(intentCaptor.capture(), any());
+        Intent launchedIntent = intentCaptor.getValue();
+        assertThat(launchedIntent.getAction()).isEqualTo(
+                "android.car.intent.action.MEDIA_TEMPLATE");
+        assertThat(launchedIntent.getStringExtra("android.car.intent.extra.MEDIA_COMPONENT"))
+                .isEqualTo(TEST_MBS_COMPONENT);
+    }
+
+    @Test
+    public void launchActivity_withIgnoredBrowseService_usesIgnoredService() {
+        String packageName = TEST_MBS_PKG;
+        IconCropper mockIconCropper = mock(IconCropper.class);
+
+        // MediaSource with null browseService but non-null ignoredBrowseService
+        MediaSource mediaSource = new MediaSource(null, TEST_MBS_CN, null, packageName,
+                "DisplayName",
+                mMockContext.getDrawable(android.R.drawable.sym_def_app_icon), mockIconCropper,
+                mMockPackageManager);
+
+        // Mock no launcher intent
+        when(mMockPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(null);
+
+        // Act
+        mediaSource.launchActivity(mMockContext, null);
+
+        // Assert
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext).startActivity(intentCaptor.capture(), any());
+        Intent launchedIntent = intentCaptor.getValue();
+        assertThat(launchedIntent.getAction()).isEqualTo(
+                "android.car.intent.action.MEDIA_TEMPLATE");
+        assertThat(launchedIntent.getStringExtra("android.car.intent.extra.MEDIA_COMPONENT"))
+                .isEqualTo(TEST_MBS_CN.flattenToString());
+        assertThat((launchedIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0).isTrue();
     }
 }
