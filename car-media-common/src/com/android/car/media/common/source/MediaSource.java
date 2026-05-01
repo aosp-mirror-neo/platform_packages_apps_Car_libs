@@ -395,6 +395,15 @@ public class MediaSource {
     }
 
     /**
+     * @return the {@link ComponentName} of the ignored browse service, if it was created with
+     * ignoreBrowser=true.
+     */
+    @Nullable
+    public ComponentName getIgnoredBrowseServiceComponentName() {
+        return mIgnoredBrowseService;
+    }
+
+    /**
      * @return a {@link Drawable} as the media source's icon.
      */
     @NonNull
