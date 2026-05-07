@@ -40,11 +40,14 @@ import com.android.car.ui.toolbar.ToolbarController;
 
 import com.google.ux.material.libmonet.blend.Blend;
 import com.google.ux.material.libmonet.hct.Hct;
+import com.google.ux.material.libmonet.palettes.TonalPalette;
 import com.google.ux.material.libmonet.scheme.SchemeVibrant;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Activity that shows displays the values of OEM design tokens.
@@ -202,8 +205,8 @@ public class TokenActivity extends Activity {
     private void updateOverlay() {
         disableOverlay();
 
-        FabricatedOverlay overlay = new FabricatedOverlay.Builder(OWNING_PACKAGE, OVERLAY_NAME,
-                TARGET_PACKAGE)
+        FabricatedOverlay.Builder builder = new FabricatedOverlay.Builder(
+                OWNING_PACKAGE, OVERLAY_NAME, TARGET_PACKAGE)
                 .setResourceValue("com.android.oem.tokens:string/theme_overlay",
                         TypedValue.TYPE_STRING, "oem.brand.model.android.rro:style/OemThemeOverlay",
                         null)
@@ -325,8 +328,33 @@ public class TokenActivity extends Activity {
                 .setResourceValue("com.android.oem.tokens:color/color_on_yellow_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
                         Blend.harmonize(getColor(R.color.oem_color_on_yellow_container_dark),
-                                mScheme.getPrimary()), null)
-                .build();
+                                mScheme.getPrimary()), null);
+
+        // Palette tones
+        int[] tones = {100, 99, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0};
+        String[] palettes = {
+                "primary", "secondary", "tertiary", "error", "neutral", "neutral_variant"};
+
+        for (String palette : palettes) {
+            TonalPalette tonalPalette;
+            switch (palette) {
+                case "primary": tonalPalette = mScheme.primaryPalette; break;
+                case "secondary": tonalPalette = mScheme.secondaryPalette; break;
+                case "tertiary": tonalPalette = mScheme.tertiaryPalette; break;
+                case "error": tonalPalette = mScheme.errorPalette; break;
+                case "neutral": tonalPalette = mScheme.neutralPalette; break;
+                case "neutral_variant": tonalPalette = mScheme.neutralVariantPalette; break;
+                default: continue;
+            }
+
+            for (int tone : tones) {
+                String resName = "oem_default_color_" + palette + "_palette_" + tone;
+                builder.setResourceValue("com.android.oem.tokens:color/" + resName,
+                        TypedValue.TYPE_INT_COLOR_ARGB8, tonalPalette.tone(tone), null);
+            }
+        }
+
+        FabricatedOverlay overlay = builder.build();
 
         if (mSquareCorners) {
             overlay.setResourceValue("com.android.oem.tokens:dimen/corner_none",
@@ -372,134 +400,71 @@ public class TokenActivity extends Activity {
         overlay.setResourceValue("android:bool/config_useRoundIcon",
                 TypedValue.TYPE_INT_BOOLEAN, isRoundCorner, null);
 
-        overlay.setResourceValue("android:color/system_primary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getPrimary(), null);
-        overlay.setResourceValue("android:color/system_primary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getPrimary(), null);
-        overlay.setResourceValue("android:color/system_on_primary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnPrimary(), null);
-        overlay.setResourceValue("android:color/system_on_primary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnPrimary(), null);
-        overlay.setResourceValue("android:color/system_primary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getPrimaryContainer(), null);
-        overlay.setResourceValue("android:color/system_primary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getPrimaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_primary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnPrimaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_primary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnPrimaryContainer(), null);
-        overlay.setResourceValue("android:color/system_secondary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSecondary(), null);
-        overlay.setResourceValue("android:color/system_secondary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSecondary(), null);
-        overlay.setResourceValue("android:color/system_on_secondary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSecondary(), null);
-        overlay.setResourceValue("android:color/system_on_secondary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSecondary(), null);
-        overlay.setResourceValue("android:color/system_secondary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSecondaryContainer(), null);
-        overlay.setResourceValue("android:color/system_secondary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSecondaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_secondary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSecondaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_secondary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSecondaryContainer(), null);
-        overlay.setResourceValue("android:color/system_tertiary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getTertiary(), null);
-        overlay.setResourceValue("android:color/system_tertiary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getTertiary(), null);
-        overlay.setResourceValue("android:color/system_on_tertiary_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnTertiary(), null);
-        overlay.setResourceValue("android:color/system_on_tertiary_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnTertiary(), null);
-        overlay.setResourceValue("android:color/system_tertiary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getTertiaryContainer(), null);
-        overlay.setResourceValue("android:color/system_tertiary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getTertiaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_tertiary_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnTertiaryContainer(), null);
-        overlay.setResourceValue("android:color/system_on_tertiary_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnTertiaryContainer(), null);
-        overlay.setResourceValue("android:color/system_error_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getError(), null);
-        overlay.setResourceValue("android:color/system_error_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getError(), null);
-        overlay.setResourceValue("android:color/system_on_error_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnError(), null);
-        overlay.setResourceValue("android:color/system_on_error_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnError(), null);
-        overlay.setResourceValue("android:color/system_error_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getErrorContainer(), null);
-        overlay.setResourceValue("android:color/system_error_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getErrorContainer(), null);
-        overlay.setResourceValue("android:color/system_on_error_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnErrorContainer(), null);
-        overlay.setResourceValue("android:color/system_on_error_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnErrorContainer(), null);
-        overlay.setResourceValue("android:color/system_surface_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurface(), null);
-        overlay.setResourceValue("android:color/system_surface_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurface(), null);
-        overlay.setResourceValue("android:color/system_on_surface_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSurface(), null);
-        overlay.setResourceValue("android:color/system_on_surface_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSurface(), null);
-        overlay.setResourceValue("android:color/system_surface_variant_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceVariant(), null);
-        overlay.setResourceValue("android:color/system_surface_variant_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceVariant(), null);
-        overlay.setResourceValue("android:color/system_on_surface_variant_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSurfaceVariant(), null);
-        overlay.setResourceValue("android:color/system_on_surface_variant_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnSurfaceVariant(), null);
-        overlay.setResourceValue("android:color/system_inverse_surface_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getInverseSurface(), null);
-        overlay.setResourceValue("android:color/system_inverse_surface_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getInverseSurface(), null);
-        overlay.setResourceValue("android:color/system_inverse_on_surface_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getInverseOnSurface(), null);
-        overlay.setResourceValue("android:color/system_inverse_on_surface_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getInverseOnSurface(), null);
-        overlay.setResourceValue("android:color/system_outline_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOutline(), null);
-        overlay.setResourceValue("android:color/system_outline_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOutline(), null);
-        overlay.setResourceValue("android:color/system_outline_variant_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOutlineVariant(), null);
-        overlay.setResourceValue("android:color/system_outline_variant_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOutlineVariant(), null);
-        overlay.setResourceValue("android:color/system_scrim_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getScrim(), null);
-        overlay.setResourceValue("android:color/system_scrim_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getScrim(), null);
-        overlay.setResourceValue("android:color/system_surface_dim_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceDim(), null);
-        overlay.setResourceValue("android:color/system_surface_dim_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceDim(), null);
-        overlay.setResourceValue("android:color/system_surface_bright_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceBright(), null);
-        overlay.setResourceValue("android:color/system_surface_bright_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceBright(), null);
-        overlay.setResourceValue("android:color/system_surface_container_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainer(), null);
-        overlay.setResourceValue("android:color/system_surface_container_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainer(), null);
-        overlay.setResourceValue("android:color/system_surface_container_low_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerLow(), null);
-        overlay.setResourceValue("android:color/system_surface_container_low_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerLow(), null);
-        overlay.setResourceValue("android:color/system_surface_container_lowest_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerLowest(), null);
-        overlay.setResourceValue("android:color/system_surface_container_lowest_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerLowest(), null);
-        overlay.setResourceValue("android:color/system_surface_container_high_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerHigh(), null);
-        overlay.setResourceValue("android:color/system_surface_container_high_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerHigh(), null);
-        overlay.setResourceValue("android:color/system_surface_container_highest_dark",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerHighest(), null);
-        overlay.setResourceValue("android:color/system_surface_container_highest_light",
-                TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerHighest(), null);
+        Map<String, Integer> semanticColors = new HashMap<>();
+        semanticColors.put("primary", mScheme.getPrimary());
+        semanticColors.put("on_primary", mScheme.getOnPrimary());
+        semanticColors.put("primary_container", mScheme.getPrimaryContainer());
+        semanticColors.put("on_primary_container", mScheme.getOnPrimaryContainer());
+        semanticColors.put("secondary", mScheme.getSecondary());
+        semanticColors.put("on_secondary", mScheme.getOnSecondary());
+        semanticColors.put("secondary_container", mScheme.getSecondaryContainer());
+        semanticColors.put("on_secondary_container", mScheme.getOnSecondaryContainer());
+        semanticColors.put("tertiary", mScheme.getTertiary());
+        semanticColors.put("on_tertiary", mScheme.getOnTertiary());
+        semanticColors.put("tertiary_container", mScheme.getTertiaryContainer());
+        semanticColors.put("on_tertiary_container", mScheme.getOnTertiaryContainer());
+        semanticColors.put("error", mScheme.getError());
+        semanticColors.put("on_error", mScheme.getOnError());
+        semanticColors.put("error_container", mScheme.getErrorContainer());
+        semanticColors.put("on_error_container", mScheme.getOnErrorContainer());
+        semanticColors.put("surface", mScheme.getSurface());
+        semanticColors.put("on_surface", mScheme.getOnSurface());
+        semanticColors.put("surface_variant", mScheme.getSurfaceVariant());
+        semanticColors.put("on_surface_variant", mScheme.getOnSurfaceVariant());
+        semanticColors.put("inverse_surface", mScheme.getInverseSurface());
+        semanticColors.put("inverse_on_surface", mScheme.getInverseOnSurface());
+        semanticColors.put("outline", mScheme.getOutline());
+        semanticColors.put("outline_variant", mScheme.getOutlineVariant());
+        semanticColors.put("scrim", mScheme.getScrim());
+        semanticColors.put("surface_dim", mScheme.getSurfaceDim());
+        semanticColors.put("surface_bright", mScheme.getSurfaceBright());
+        semanticColors.put("surface_container", mScheme.getSurfaceContainer());
+        semanticColors.put("surface_container_low", mScheme.getSurfaceContainerLow());
+        semanticColors.put("surface_container_lowest", mScheme.getSurfaceContainerLowest());
+        semanticColors.put("surface_container_high", mScheme.getSurfaceContainerHigh());
+        semanticColors.put("surface_container_highest", mScheme.getSurfaceContainerHighest());
+
+        for (Map.Entry<String, Integer> entry : semanticColors.entrySet()) {
+            String name = entry.getKey();
+            int color = entry.getValue();
+            overlay.setResourceValue("android:color/system_" + name + "_dark",
+                    TypedValue.TYPE_INT_COLOR_ARGB8, color, null);
+            overlay.setResourceValue("android:color/system_" + name + "_light",
+                    TypedValue.TYPE_INT_COLOR_ARGB8, color, null);
+        }
+
+        // Palette tones
+        int[] tones = {0, 10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+        String[] palettes = {"accent1", "accent2", "accent3", "neutral1", "neutral2", "error"};
+
+        for (String palette : palettes) {
+            TonalPalette tonalPalette;
+            switch (palette) {
+                case "accent1": tonalPalette = mScheme.primaryPalette; break;
+                case "accent2": tonalPalette = mScheme.secondaryPalette; break;
+                case "accent3": tonalPalette = mScheme.tertiaryPalette; break;
+                case "neutral1": tonalPalette = mScheme.neutralPalette; break;
+                case "neutral2": tonalPalette = mScheme.neutralVariantPalette; break;
+                case "error": tonalPalette = mScheme.errorPalette; break;
+                default: continue;
+            }
+
+            for (int tone : tones) {
+                int toneValue = 100 - tone / 10;
+                overlay.setResourceValue("android:color/system_" + palette + "_" + tone,
+                        TypedValue.TYPE_INT_COLOR_ARGB8, tonalPalette.tone(toneValue), null);
+            }
+        }
 
         OverlayManagerTransaction.Builder transaction =
                 new OverlayManagerTransaction.Builder()
