@@ -32,6 +32,10 @@
 
     <uses-library android:name="com.android.oem.tokens" android:required="false"/>
 
+    <provider android:name=".TokenProvider"
+              android:authorities="com.android.aaos.studio.provider"
+              android:exported="true" />
+
     <activity
         android:name=".TokenActivity"
         android:exported="true">

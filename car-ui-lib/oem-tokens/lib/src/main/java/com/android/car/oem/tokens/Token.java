@@ -254,7 +254,12 @@ public class Token {
      * Return a mapping of current values for OEM Design tokens.
      */
     public static String dump(@NonNull Context context) {
-        return createTokenMap(context).toString();
+        java.util.TreeMap<String, String> map = new java.util.TreeMap<>(createTokenMap(context));
+        StringBuilder sb = new StringBuilder();
+        for (java.util.Map.Entry<String, String> entry : map.entrySet()) {
+            sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+        }
+        return sb.toString();
     }
 
     /**
