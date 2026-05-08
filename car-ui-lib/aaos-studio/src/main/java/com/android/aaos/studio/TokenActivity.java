@@ -245,10 +245,7 @@ public class TokenActivity extends Activity {
                         TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getErrorContainer(), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_error_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnErrorContainer(), null)
-                .setResourceValue("com.android.oem.tokens:color/color_background",
-                        TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getBackground(), null)
-                .setResourceValue("com.android.oem.tokens:color/color_on_background",
-                        TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getOnBackground(), null)
+
                 .setResourceValue("com.android.oem.tokens:color/color_surface",
                         TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurface(), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_surface",
@@ -348,7 +345,7 @@ public class TokenActivity extends Activity {
             }
 
             for (int tone : tones) {
-                String resName = "oem_default_color_" + palette + "_palette_" + tone;
+                String resName = "color_" + palette + "_palette_" + tone;
                 builder.setResourceValue("com.android.oem.tokens:color/" + resName,
                         TypedValue.TYPE_INT_COLOR_ARGB8, tonalPalette.tone(tone), null);
             }
