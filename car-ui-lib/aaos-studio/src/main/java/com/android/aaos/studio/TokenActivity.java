@@ -280,51 +280,67 @@ public class TokenActivity extends Activity {
                         TypedValue.TYPE_INT_COLOR_ARGB8, mScheme.getSurfaceContainerHighest(), null)
                 .setResourceValue("com.android.oem.tokens:color/color_blue",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_blue_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorBlue),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_blue",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_blue_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnBlue),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_blue_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_blue_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorBlueContainer),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_blue_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_blue_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnBlueContainer),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_green",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_green_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorGreen),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_green",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_green_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnGreen),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_green_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_green_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorGreenContainer),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_green_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_green_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnGreenContainer),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_yellow",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_yellow_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorYellow),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_yellow",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_yellow_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnYellow),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_yellow_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_yellow_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorYellowContainer),
                                 mScheme.getPrimary()), null)
                 .setResourceValue("com.android.oem.tokens:color/color_on_yellow_container",
                         TypedValue.TYPE_INT_COLOR_ARGB8,
-                        Blend.harmonize(getColor(R.color.oem_color_on_yellow_container_dark),
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnYellowContainer),
+                                mScheme.getPrimary()), null)
+                .setResourceValue("com.android.oem.tokens:color/color_red",
+                        TypedValue.TYPE_INT_COLOR_ARGB8,
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorRed),
+                                mScheme.getPrimary()), null)
+                .setResourceValue("com.android.oem.tokens:color/color_on_red",
+                        TypedValue.TYPE_INT_COLOR_ARGB8,
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnRed),
+                                mScheme.getPrimary()), null)
+                .setResourceValue("com.android.oem.tokens:color/color_red_container",
+                        TypedValue.TYPE_INT_COLOR_ARGB8,
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorRedContainer),
+                                mScheme.getPrimary()), null)
+                .setResourceValue("com.android.oem.tokens:color/color_on_red_container",
+                        TypedValue.TYPE_INT_COLOR_ARGB8,
+                        Blend.harmonize(Token.getColor(this, R.attr.oemColorOnRedContainer),
                                 mScheme.getPrimary()), null);
 
         // Palette tones
@@ -543,6 +559,11 @@ public class TokenActivity extends Activity {
         list.add(new Pair<>("colorYellowContainer", R.attr.oemColorYellowContainer));
         list.add(new Pair<>("colorOnYellowContainer",
                 R.attr.oemColorOnYellowContainer));
+
+        list.add(new Pair<>("colorRed", R.attr.oemColorRed));
+        list.add(new Pair<>("colorOnRed", R.attr.oemColorOnRed));
+        list.add(new Pair<>("colorRedContainer", R.attr.oemColorRedContainer));
+        list.add(new Pair<>("colorOnRedContainer", R.attr.oemColorOnRedContainer));
 
         return list;
     }
