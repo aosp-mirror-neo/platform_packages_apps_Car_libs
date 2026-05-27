@@ -203,8 +203,24 @@ public class TokenActivity extends Activity {
                         case "Content": mScheme = new SchemeContent(seed, isDark, 0.0); break;
                         default: mScheme = new SchemeVibrant(seed, isDark, 0.0); break;
                     }
-                    updateOverlay();
-                    updateFrameworkOverlay();
+
+                    FabricatedOverlay appOverlay = createAppOverlay();
+                    FabricatedOverlay frameworkOverlay = createFrameworkOverlay();
+
+                    OverlayManagerTransaction.Builder transaction =
+                            new OverlayManagerTransaction.Builder()
+                            .unregisterFabricatedOverlay(
+                                    new OverlayIdentifier(OWNING_PACKAGE, OVERLAY_NAME))
+                            .unregisterFabricatedOverlay(
+                                    new OverlayIdentifier(OWNING_PACKAGE, ANDROID_OVERLAY_NAME))
+                            .registerFabricatedOverlay(appOverlay)
+                            .setEnabled(appOverlay.getIdentifier(), true)
+                            .setEnabled(appOverlay.getIdentifier(), true, 0)
+                            .registerFabricatedOverlay(frameworkOverlay)
+                            .setEnabled(frameworkOverlay.getIdentifier(), true)
+                            .setEnabled(frameworkOverlay.getIdentifier(), true, 0);
+
+                    mOverlayManager.commit(transaction.build());
                 })
                 .build());
         menuItems.add(MenuItem.builder(this)
@@ -275,8 +291,7 @@ public class TokenActivity extends Activity {
         mOverlayManager.commit(transaction.build());
     }
 
-    private void updateOverlay() {
-        disableOverlay();
+    private FabricatedOverlay createAppOverlay() {
 
         FabricatedOverlay.Builder builder = new FabricatedOverlay.Builder(
                 OWNING_PACKAGE, OVERLAY_NAME, TARGET_PACKAGE)
@@ -459,16 +474,10 @@ public class TokenActivity extends Activity {
                     0f, TypedValue.COMPLEX_UNIT_DIP, null);
         }
 
-        OverlayManagerTransaction.Builder transaction =
-                new OverlayManagerTransaction.Builder()
-                        .registerFabricatedOverlay(overlay)
-                        .setEnabled(overlay.getIdentifier(), true)
-                        .setEnabled(overlay.getIdentifier(), true, 0);
-
-        mOverlayManager.commit(transaction.build());
+        return overlay;
     }
 
-    private void updateFrameworkOverlay() {
+    private FabricatedOverlay createFrameworkOverlay() {
         FabricatedOverlay overlay = new FabricatedOverlay.Builder(OWNING_PACKAGE,
                 ANDROID_OVERLAY_NAME, "android")
                 .build();
@@ -552,13 +561,7 @@ public class TokenActivity extends Activity {
             }
         }
 
-        OverlayManagerTransaction.Builder transaction =
-                new OverlayManagerTransaction.Builder()
-                        .registerFabricatedOverlay(overlay)
-                        .setEnabled(overlay.getIdentifier(), true)
-                        .setEnabled(overlay.getIdentifier(), true, 0);
-
-        mOverlayManager.commit(transaction.build());
+        return overlay;
     }
 
     private List<TokenDemoAdapter.TokenItem> createColorList() {
