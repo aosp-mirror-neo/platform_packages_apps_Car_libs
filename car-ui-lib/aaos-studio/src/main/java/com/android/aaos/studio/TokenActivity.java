@@ -23,9 +23,10 @@ import android.content.om.OverlayManagerTransaction;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -39,8 +40,13 @@ import com.android.car.ui.toolbar.Tab;
 import com.android.car.ui.toolbar.ToolbarController;
 
 import com.google.ux.material.libmonet.blend.Blend;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
 import com.google.ux.material.libmonet.hct.Hct;
 import com.google.ux.material.libmonet.palettes.TonalPalette;
+import com.google.ux.material.libmonet.scheme.SchemeContent;
+import com.google.ux.material.libmonet.scheme.SchemeExpressive;
+import com.google.ux.material.libmonet.scheme.SchemeNeutral;
+import com.google.ux.material.libmonet.scheme.SchemeTonalSpot;
 import com.google.ux.material.libmonet.scheme.SchemeVibrant;
 
 import java.util.ArrayList;
@@ -48,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 
 /**
  * Activity that shows displays the values of OEM design tokens.
@@ -61,10 +68,14 @@ public class TokenActivity extends Activity {
 
     private OverlayManager mOverlayManager;
     private View mColorPreview;
-    private SchemeVibrant mScheme;
+    private DynamicScheme mScheme;
     private boolean mIsLightMode;
     private boolean mSquareCorners;
     private SeekBar mSeekBar;
+    private EditText mHexInput;
+    private String mSchemeType = "Vibrant";
+    private float mSaturation = 1.0f;
+    private float mValue = 1.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,30 +125,90 @@ public class TokenActivity extends Activity {
         Switch cornerSwitch = requireViewById(R.id.corner_switch);
         mColorPreview = requireViewById(R.id.color_preview);
         mSeekBar = requireViewById(R.id.color_seekbar);
+        mHexInput = requireViewById(R.id.hex_input);
+        mHexInput.setOnEditorActionListener((v, actionId, event) -> {
+            String text = v.getText().toString();
+            if (text.matches("^#?([0-9a-fA-F]{6})$")) {
+                int color = Color.parseColor(text.startsWith("#") ? text : "#" + text);
+                float[] hsv = new float[3];
+                Color.colorToHSV(color, hsv);
+                mSeekBar.setProgress((int) hsv[0]);
+                mSaturation = hsv[1];
+                mValue = hsv[2];
+                updateColorPreview();
+            } else {
+                Toast.makeText(this, "Invalid hex color", Toast.LENGTH_SHORT).show();
+                mSeekBar.setProgress(0);
+                mSaturation = 1.0f;
+                mValue = 1.0f;
+                updateColorPreview();
+            }
+            return false;
+        });
 
         mIsLightMode = isLightMode(Token.getColor(this, R.attr.oemColorSurface),
                 Token.getColor(this, R.attr.oemColorOnSurface));
-        lightSwitch.setChecked(mIsLightMode);
-        lightSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mIsLightMode = isChecked);
+        lightSwitch.setChecked(!mIsLightMode);
+        lightSwitch.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> mIsLightMode = !isChecked);
 
         mSquareCorners = Token.getCornerRadius(this, R.attr.oemShapeCornerFull) == 0;
         cornerSwitch.setChecked(mSquareCorners);
         cornerSwitch.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> mSquareCorners = isChecked);
 
+        List<RadioButton> radioButtons = new ArrayList<>();
+        RadioButton rbTonalSpot = requireViewById(R.id.scheme_tonal_spot);
+        RadioButton rbVibrant = requireViewById(R.id.scheme_vibrant);
+        RadioButton rbExpressive = requireViewById(R.id.scheme_expressive);
+        RadioButton rbNeutral = requireViewById(R.id.scheme_neutral);
+        RadioButton rbContent = requireViewById(R.id.scheme_content);
+
+        radioButtons.add(rbTonalSpot);
+        radioButtons.add(rbVibrant);
+        radioButtons.add(rbExpressive);
+        radioButtons.add(rbNeutral);
+        radioButtons.add(rbContent);
+
+        for (RadioButton rb : radioButtons) {
+            rb.setOnClickListener(v -> {
+                for (RadioButton other : radioButtons) {
+                    other.setChecked(other == v);
+                }
+                if (v.getId() == R.id.scheme_tonal_spot) {
+                    mSchemeType = "Tonal Spot";
+                } else if (v.getId() == R.id.scheme_vibrant) {
+                    mSchemeType = "Vibrant";
+                } else if (v.getId() == R.id.scheme_expressive) {
+                    mSchemeType = "Expressive";
+                } else if (v.getId() == R.id.scheme_neutral) {
+                    mSchemeType = "Neutral";
+                } else if (v.getId() == R.id.scheme_content) {
+                    mSchemeType = "Content";
+                }
+            });
+        }
+
         List<MenuItem> menuItems = new ArrayList<>();
         menuItems.add(MenuItem.builder(this)
-                .setTitle("Enable RRO")
+                .setTitle("Apply")
                 .setOnClickListener(i -> {
                     int seedColor = getSeedColor();
                     Hct seed = Hct.fromInt(seedColor);
-                    mScheme = new SchemeVibrant(seed, !mIsLightMode, 0.0);
+                    boolean isDark = !mIsLightMode;
+                    switch (mSchemeType) {
+                        case "Tonal Spot": mScheme = new SchemeTonalSpot(seed, isDark, 0.0); break;
+                        case "Expressive": mScheme = new SchemeExpressive(seed, isDark, 0.0); break;
+                        case "Neutral": mScheme = new SchemeNeutral(seed, isDark, 0.0); break;
+                        case "Content": mScheme = new SchemeContent(seed, isDark, 0.0); break;
+                        default: mScheme = new SchemeVibrant(seed, isDark, 0.0); break;
+                    }
                     updateOverlay();
                     updateFrameworkOverlay();
                 })
                 .build());
         menuItems.add(MenuItem.builder(this)
-                .setTitle("Disable RRO")
+                .setTitle("Reset")
                 .setOnClickListener(i -> {
                     disableOverlay();
                     disableFrameworkOverlay();
@@ -176,14 +247,16 @@ public class TokenActivity extends Activity {
     private int getSeedColor() {
         float hue = (float) mSeekBar.getProgress();
 
-        // Set saturation and value to max 1.0f
-        float[] hsv = {hue, 1.0f, 1.0f};
+        float[] hsv = {hue, mSaturation, mValue};
         return Color.HSVToColor(hsv);
     }
 
     private void updateColorPreview() {
         int color = getSeedColor();
         ((GradientDrawable) mColorPreview.getBackground()).setColor(color);
+        if (mHexInput != null) {
+            mHexInput.setText(String.format("#%06X", (0xFFFFFF & color)));
+        }
     }
 
     private void disableOverlay() {
@@ -488,142 +561,169 @@ public class TokenActivity extends Activity {
         mOverlayManager.commit(transaction.build());
     }
 
-    private List<Pair<String, Integer>> createColorList() {
-        List<Pair<String, Integer>> list = new ArrayList<>();
+    private List<TokenDemoAdapter.TokenItem> createColorList() {
+        List<TokenDemoAdapter.TokenItem> list = new ArrayList<>();
 
-        list.add(new Pair<>("colorPrimary", R.attr.oemColorPrimary));
-        list.add(new Pair<>("colorOnPrimary", R.attr.oemColorOnPrimary));
-        list.add(new Pair<>("colorPrimaryContainer",
-                R.attr.oemColorPrimaryContainer));
-        list.add(new Pair<>("colorPrimaryOnContainer",
-                R.attr.oemColorOnPrimaryContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorPrimary", R.attr.oemColorPrimary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnPrimary", R.attr.oemColorOnPrimary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorPrimaryContainer",
+                R.attr.oemColorPrimaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorPrimaryOnContainer",
+                R.attr.oemColorOnPrimaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorSecondary", R.attr.oemColorSecondary));
-        list.add(new Pair<>("colorOnSecondary", R.attr.oemColorOnSecondary));
-        list.add(new Pair<>("colorSecondaryContainer",
-                R.attr.oemColorSecondaryContainer));
-        list.add(new Pair<>("colorSecondaryOnContainer",
-                R.attr.oemColorOnSecondaryContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorSecondary", R.attr.oemColorSecondary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnSecondary", R.attr.oemColorOnSecondary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSecondaryContainer",
+                R.attr.oemColorSecondaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSecondaryOnContainer",
+                R.attr.oemColorOnSecondaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorTertiary", R.attr.oemColorTertiary));
-        list.add(new Pair<>("colorOnTertiary", R.attr.oemColorOnTertiary));
-        list.add(new Pair<>("colorTertiaryContainer",
-                R.attr.oemColorTertiaryContainer));
-        list.add(new Pair<>("colorTertiaryOnContainer",
-                R.attr.oemColorOnTertiaryContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorTertiary", R.attr.oemColorTertiary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnTertiary", R.attr.oemColorOnTertiary,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorTertiaryContainer",
+                R.attr.oemColorTertiaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorTertiaryOnContainer",
+                R.attr.oemColorOnTertiaryContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorError", R.attr.oemColorError));
-        list.add(new Pair<>("colorOnError", R.attr.oemColorOnError));
-        list.add(new Pair<>("colorErrorContainer", R.attr.oemColorErrorContainer));
-        list.add(new Pair<>("colorErrorOnContainer",
-                R.attr.oemColorOnErrorContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorError", R.attr.oemColorError,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnError", R.attr.oemColorOnError,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorErrorContainer",
+                R.attr.oemColorErrorContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorErrorOnContainer",
+                R.attr.oemColorOnErrorContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorSurface", R.attr.oemColorSurface));
-        list.add(new Pair<>("colorOnSurface", R.attr.oemColorOnSurface));
-        list.add(new Pair<>("colorSurfaceVariant", R.attr.oemColorSurfaceVariant));
-        list.add(new Pair<>("colorOnSurfaceVariant",
-                R.attr.oemColorOnSurfaceVariant));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurface", R.attr.oemColorSurface,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnSurface", R.attr.oemColorOnSurface,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceVariant",
+                R.attr.oemColorSurfaceVariant, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnSurfaceVariant",
+                R.attr.oemColorOnSurfaceVariant, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorOutline", R.attr.oemColorOutline));
+        list.add(new TokenDemoAdapter.TokenItem("colorOutline", R.attr.oemColorOutline,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorSurfaceDim", R.attr.oemColorSurfaceDim));
-        list.add(new Pair<>("colorSurfaceBright", R.attr.oemColorSurfaceBright));
-        list.add(new Pair<>("colorSurfaceContainer",
-                R.attr.oemColorSurfaceContainer));
-        list.add(new Pair<>("colorSurfaceContainerLow", R.attr.oemColorSurfaceContainerLow));
-        list.add(new Pair<>("colorSurfaceContainerLowest", R.attr.oemColorSurfaceContainerLowest));
-        list.add(new Pair<>("colorSurfaceContainerHigh",
-                R.attr.oemColorSurfaceContainerHigh));
-        list.add(new Pair<>("colorSurfaceContainerHighest",
-                R.attr.oemColorSurfaceContainerHighest));
-        list.add(new Pair<>("colorShadow",
-                R.attr.oemColorShadow));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceDim", R.attr.oemColorSurfaceDim,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceBright", R.attr.oemColorSurfaceBright,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceContainer",
+                R.attr.oemColorSurfaceContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceContainerLow",
+                R.attr.oemColorSurfaceContainerLow, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceContainerLowest",
+                R.attr.oemColorSurfaceContainerLowest, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceContainerHigh",
+                R.attr.oemColorSurfaceContainerHigh, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorSurfaceContainerHighest",
+                R.attr.oemColorSurfaceContainerHighest, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorShadow",
+                R.attr.oemColorShadow, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorBlue", R.attr.oemColorBlue));
-        list.add(new Pair<>("colorOnBlue",
-                R.attr.oemColorOnBlue));
-        list.add(new Pair<>("colorBlueContainer", R.attr.oemColorBlueContainer));
-        list.add(new Pair<>("colorOnBlueContainer",
-                R.attr.oemColorOnBlueContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorBlue", R.attr.oemColorBlue,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnBlue",
+                R.attr.oemColorOnBlue, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorBlueContainer", R.attr.oemColorBlueContainer,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnBlueContainer",
+                R.attr.oemColorOnBlueContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorGreen", R.attr.oemColorGreen));
-        list.add(new Pair<>("colorOnGreen",
-                R.attr.oemColorOnGreenContainer));
-        list.add(new Pair<>("colorGreenContainer", R.attr.oemColorGreenContainer));
-        list.add(new Pair<>("colorOnGreenContainer",
-                R.attr.oemColorOnGreenContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorGreen", R.attr.oemColorGreen,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnGreen",
+                R.attr.oemColorOnGreen, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorGreenContainer",
+                R.attr.oemColorGreenContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnGreenContainer",
+                R.attr.oemColorOnGreenContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorYellow", R.attr.oemColorYellow));
-        list.add(new Pair<>("colorOnYellow",
-                R.attr.oemColorOnYellow));
-        list.add(new Pair<>("colorYellowContainer", R.attr.oemColorYellowContainer));
-        list.add(new Pair<>("colorOnYellowContainer",
-                R.attr.oemColorOnYellowContainer));
+        list.add(new TokenDemoAdapter.TokenItem("colorYellow", R.attr.oemColorYellow,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnYellow",
+                R.attr.oemColorOnYellow, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorYellowContainer",
+                R.attr.oemColorYellowContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnYellowContainer",
+                R.attr.oemColorOnYellowContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
-        list.add(new Pair<>("colorRed", R.attr.oemColorRed));
-        list.add(new Pair<>("colorOnRed", R.attr.oemColorOnRed));
-        list.add(new Pair<>("colorRedContainer", R.attr.oemColorRedContainer));
-        list.add(new Pair<>("colorOnRedContainer", R.attr.oemColorOnRedContainer));
-
-        return list;
-    }
-
-    private List<Pair<String, Integer>> createTextList() {
-        List<Pair<String, Integer>> list = new ArrayList<>();
-        list.add(new Pair<>("textAppearanceDisplayLarge",
-                R.attr.oemTextAppearanceDisplayLarge));
-        list.add(new Pair<>("textAppearanceDisplayMedium",
-                R.attr.oemTextAppearanceDisplayMedium));
-        list.add(new Pair<>("textAppearanceDisplaySmall",
-                R.attr.oemTextAppearanceDisplaySmall));
-
-        list.add(new Pair<>("textAppearanceHeadlineLarge",
-                R.attr.oemTextAppearanceHeadlineLarge));
-        list.add(new Pair<>("textAppearanceHeadlineMedium",
-                R.attr.oemTextAppearanceHeadlineMedium));
-        list.add(new Pair<>("textAppearanceHeadlineSmall",
-                R.attr.oemTextAppearanceHeadlineSmall));
-
-        list.add(new Pair<>("textAppearanceTitleLarge",
-                R.attr.oemTextAppearanceTitleLarge));
-        list.add(new Pair<>("textAppearanceTitleMedium",
-                R.attr.oemTextAppearanceTitleMedium));
-        list.add(new Pair<>("textAppearanceTitleSmall",
-                R.attr.oemTextAppearanceTitleSmall));
-
-        list.add(new Pair<>("textAppearanceLabelLarge",
-                R.attr.oemTextAppearanceLabelLarge));
-        list.add(new Pair<>("textAppearanceLabelMedium",
-                R.attr.oemTextAppearanceLabelMedium));
-        list.add(new Pair<>("textAppearanceLabelSmall",
-                R.attr.oemTextAppearanceLabelSmall));
-
-        list.add(new Pair<>("textAppearanceBodyLarge",
-                R.attr.oemTextAppearanceBodyLarge));
-        list.add(new Pair<>("textAppearanceBodyMedium",
-                R.attr.oemTextAppearanceBodyMedium));
-        list.add(new Pair<>("textAppearanceBodySmall",
-                R.attr.oemTextAppearanceBodySmall));
+        list.add(new TokenDemoAdapter.TokenItem("colorRed", R.attr.oemColorRed,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnRed", R.attr.oemColorOnRed,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorRedContainer", R.attr.oemColorRedContainer,
+                TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
+        list.add(new TokenDemoAdapter.TokenItem("colorOnRedContainer",
+                R.attr.oemColorOnRedContainer, TokenDemoAdapter.VIEW_TYPE_LIST_COLOR));
 
         return list;
     }
 
-    private List<Pair<String, Integer>> createCornerRadiusList() {
-        List<Pair<String, Integer>> list = new ArrayList<>();
-        list.add(new Pair<>("shapeCornerNone",
-                R.attr.oemShapeCornerNone));
-        list.add(new Pair<>("shapeCornerExtraSmall",
-                R.attr.oemShapeCornerExtraSmall));
-        list.add(new Pair<>("shapeCornerSmall",
-                R.attr.oemShapeCornerSmall));
-        list.add(new Pair<>("shapeCornerMedium",
-                R.attr.oemShapeCornerMedium));
-        list.add(new Pair<>("shapeCornerLarge",
-                R.attr.oemShapeCornerLarge));
-        list.add(new Pair<>("shapeCornerExtraLarge",
-                R.attr.oemShapeCornerExtraLarge));
-        list.add(new Pair<>("shapeCornerFull",
-                R.attr.oemShapeCornerFull));
+    private List<TokenDemoAdapter.TokenItem> createTextList() {
+        List<TokenDemoAdapter.TokenItem> list = new ArrayList<>();
+        list.add(new TokenDemoAdapter.TokenItem("Display Large",
+                R.attr.oemTextAppearanceDisplayLarge, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Display Medium",
+                R.attr.oemTextAppearanceDisplayMedium, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Display Small",
+                R.attr.oemTextAppearanceDisplaySmall, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+
+        list.add(new TokenDemoAdapter.TokenItem("Headline Large",
+                R.attr.oemTextAppearanceHeadlineLarge, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Headline Medium",
+                R.attr.oemTextAppearanceHeadlineMedium, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Headline Small",
+                R.attr.oemTextAppearanceHeadlineSmall, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+
+        list.add(new TokenDemoAdapter.TokenItem("Title Large",
+                R.attr.oemTextAppearanceTitleLarge, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Title Medium",
+                R.attr.oemTextAppearanceTitleMedium, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Title Small",
+                R.attr.oemTextAppearanceTitleSmall, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+
+        list.add(new TokenDemoAdapter.TokenItem("Label Large",
+                R.attr.oemTextAppearanceLabelLarge, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Label Medium",
+                R.attr.oemTextAppearanceLabelMedium, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Label Small",
+                R.attr.oemTextAppearanceLabelSmall, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+
+        list.add(new TokenDemoAdapter.TokenItem("Body Large",
+                R.attr.oemTextAppearanceBodyLarge, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Body Medium",
+                R.attr.oemTextAppearanceBodyMedium, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+        list.add(new TokenDemoAdapter.TokenItem("Body Small",
+                R.attr.oemTextAppearanceBodySmall, TokenDemoAdapter.VIEW_TYPE_LIST_TEXT));
+
+        return list;
+    }
+
+    private List<TokenDemoAdapter.TokenItem> createCornerRadiusList() {
+        List<TokenDemoAdapter.TokenItem> list = new ArrayList<>();
+        list.add(new TokenDemoAdapter.TokenItem("Corner None",
+                R.attr.oemShapeCornerNone, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Extra Small",
+                R.attr.oemShapeCornerExtraSmall, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Small",
+                R.attr.oemShapeCornerSmall, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Medium",
+                R.attr.oemShapeCornerMedium, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Large",
+                R.attr.oemShapeCornerLarge, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Extra Large",
+                R.attr.oemShapeCornerExtraLarge, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
+        list.add(new TokenDemoAdapter.TokenItem("Corner Full",
+                R.attr.oemShapeCornerFull, TokenDemoAdapter.VIEW_TYPE_LIST_SHAPE));
 
         return list;
     }

@@ -18,7 +18,6 @@ package com.android.aaos.studio;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,9 +40,23 @@ public class TokenDemoAdapter extends
     static final int VIEW_TYPE_LIST_TEXT = 2;
     static final int VIEW_TYPE_LIST_SHAPE = 3;
 
-    private final List<Pair<String, Integer>> mItems;
+    public static class TokenItem {
+        public final String name;
+        public final int attrId;
+        public final int type;
 
-    public TokenDemoAdapter(List<Pair<String, Integer>> items) {
+        public TokenItem(String name, int attrId, int type) {
+            this.name = name;
+            this.attrId = attrId;
+            this.type = type;
+        }
+    }
+
+    private final List<TokenItem> mItems;
+    // Cached value to avoid repeated slow reads of oemShapeCornerFull token
+    private Float mFullCornerRadius = null;
+
+    public TokenDemoAdapter(List<TokenItem> items) {
         mItems = items;
     }
 
@@ -51,36 +64,60 @@ public class TokenDemoAdapter extends
     @Override
     public TokenDemoItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.car_ui_recycler_view_list_item, parent, false);
+        View view;
+        switch (viewType) {
+            case VIEW_TYPE_LIST_COLOR:
+                view = inflater.inflate(R.layout.token_list_item_color, parent, false);
+                break;
+            case VIEW_TYPE_LIST_TEXT:
+                view = inflater.inflate(R.layout.token_list_item_text, parent, false);
+                break;
+            case VIEW_TYPE_LIST_SHAPE:
+                view = inflater.inflate(R.layout.token_list_item_shape, parent, false);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid view type: " + viewType);
+        }
         return new TokenDemoItemViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TokenDemoItemViewHolder holder, int position) {
-        Pair<String, Integer> tokenInfo = mItems.get(position);
+        TokenItem item = mItems.get(position);
         Context oemContext = Token.createOemStyledContext(holder.itemView.getContext());
 
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_LIST_COLOR:
-                holder.mText.setText(tokenInfo.first);
-                int color = Token.getColor(oemContext, tokenInfo.second);
-                holder.mText.setTextColor(color);
+                holder.mText.setText(item.name);
+                int color = Token.getColor(oemContext, item.attrId);
+                GradientDrawable circle = new GradientDrawable();
+                circle.setShape(GradientDrawable.RECTANGLE);
+                if (mFullCornerRadius == null) {
+                    mFullCornerRadius = Token.getCornerRadius(oemContext,
+                            R.attr.oemShapeCornerFull);
+                }
+                circle.setCornerRadius(mFullCornerRadius);
+                circle.setColor(color);
+                holder.mColorIndicator.setBackground(circle);
+                holder.mText.setTextColor(Token.getColor(oemContext, R.attr.oemColorOnSurface));
                 break;
             case VIEW_TYPE_LIST_TEXT:
-                holder.mText.setText(tokenInfo.first);
+                holder.mText.setText(item.name);
                 int textAppearanceId = Token.getTextAppearance(oemContext,
-                        tokenInfo.second);
+                        item.attrId);
                 holder.mText.setTextAppearance(textAppearanceId);
                 break;
             case VIEW_TYPE_LIST_SHAPE:
                 float cornerRadius = Token.getCornerRadius(oemContext,
-                        tokenInfo.second);
-                GradientDrawable background = new GradientDrawable();
-                background.setColor(
-                        holder.itemView.getResources().getColor(android.R.color.holo_blue_dark));
-                background.setCornerRadius(cornerRadius);
-                holder.mText.setText(tokenInfo.first);
-                holder.mText.setBackground(background);
+                        item.attrId);
+                GradientDrawable shape = new GradientDrawable();
+                shape.setShape(GradientDrawable.RECTANGLE);
+                shape.setColor(Token.getColor(oemContext, R.attr.oemColorPrimary));
+                shape.setCornerRadius(cornerRadius);
+                holder.mColorIndicator.setBackground(shape);
+
+                holder.mText.setText(item.name);
+
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + holder.getItemViewType());
@@ -89,18 +126,9 @@ public class TokenDemoAdapter extends
 
     @Override
     public int getItemViewType(int position) {
-        Pair<String, Integer> tokenInfo = mItems.get(position);
-        if (tokenInfo.first.contains("color")) {
-            return VIEW_TYPE_LIST_COLOR;
-        } else if (tokenInfo.first.contains("textAppearance")) {
-            return VIEW_TYPE_LIST_TEXT;
-        } else if (tokenInfo.first.contains("shapeCorner")) {
-            return VIEW_TYPE_LIST_SHAPE;
-        }
-
-        throw new IllegalStateException("Unknown view type.");
-
+        return mItems.get(position).type;
     }
+
 
     @Override
     public int getItemCount() {
@@ -109,10 +137,12 @@ public class TokenDemoAdapter extends
 
     public static class TokenDemoItemViewHolder extends RecyclerView.ViewHolder {
         TextView mText;
+        View mColorIndicator;
 
         TokenDemoItemViewHolder(@NonNull View itemView) {
             super(itemView);
             mText = itemView.findViewById(R.id.textTitle);
+            mColorIndicator = itemView.findViewById(R.id.color_indicator);
         }
     }
 }
