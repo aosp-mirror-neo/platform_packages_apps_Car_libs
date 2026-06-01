@@ -739,6 +739,10 @@ public class TokenActivity extends Activity {
         if (r <= 0.001f) {
             return "M 0 0 H 100 V 100 H 0 Z"; // Simple rectangle
         }
+        // Handle the fully rounded (circle) case
+        if (r >= 49.99f) {
+            return "M 50 0 A 50 50 0 1 1 50 100 A 50 50 0 1 1 50 0 Z";
+        }
         return String.format(
                 Locale.US,
                 "M %f 0 L %f 0 A %f %f 0 0 1 100 %f L 100 %f A %f %f 0 0 1 %f 100 L %f 100 A %f "
