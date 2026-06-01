@@ -150,7 +150,7 @@
   <dimen name="corner_extra_small">8dp</dimen>
   <dimen name="corner_small">16dp</dimen>
   <dimen name="corner_medium">24dp</dimen>
-  <dimen name="corner_large">48dp</dimen>
+  <dimen name="corner_large">32dp</dimen>
   <dimen name="corner_extra_large">48dp</dimen>
   <dimen name="corner_full">1000dp</dimen>
 
