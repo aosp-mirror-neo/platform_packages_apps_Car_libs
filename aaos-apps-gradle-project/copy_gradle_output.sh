@@ -284,3 +284,8 @@ fi
 
 $JAVA_HOME/bin/jar cvfM $1/jacoco-report-classes-all.jar -C $GRADLE_OUTPUT_DIR/jacoco .
 check_status $?
+
+# Copy attestation manifest for DriverUI.apk
+cp "$SCRIPTS_DIR/attestation_manifest.json" "$1/attestation_manifest.json"
+check_status $?
+
