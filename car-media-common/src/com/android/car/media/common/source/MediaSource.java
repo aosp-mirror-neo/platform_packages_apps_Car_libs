@@ -328,12 +328,16 @@ public class MediaSource {
             Log.e(TAG, "getServiceFromExtras null controller");
             return null;
         }
-        Bundle extras = controller.getExtras();
-        if (extras == null || extras.getString(Car.CAR_EXTRA_BROWSE_SERVICE_FOR_SESSION) == null) {
+
+        final Bundle extras = controller.getExtras();
+        if (extras == null) {
             return null;
         }
-        String serviceNameString =
-                controller.getExtras().getString(Car.CAR_EXTRA_BROWSE_SERVICE_FOR_SESSION);
+
+        final String serviceNameString = extras.getString(Car.CAR_EXTRA_BROWSE_SERVICE_FOR_SESSION);
+        if (serviceNameString == null) {
+            return null;
+        }
 
         return new ComponentName(controller.getPackageName(), serviceNameString);
     }
@@ -392,6 +396,15 @@ public class MediaSource {
     @Nullable
     public ComponentName getBrowseServiceComponentName() {
         return mBrowseService;
+    }
+
+    /**
+     * @return the {@link ComponentName} of the ignored browse service, if it was created with
+     * ignoreBrowser=true.
+     */
+    @Nullable
+    public ComponentName getIgnoredBrowseServiceComponentName() {
+        return mIgnoredBrowseService;
     }
 
     /**

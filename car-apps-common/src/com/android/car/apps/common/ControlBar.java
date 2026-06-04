@@ -102,6 +102,9 @@ public class ControlBar extends RelativeLayout implements ExpandableControlBar {
     // Weight for the spacers used between buttons
     private static final float SPACERS_WEIGHT = 1f;
 
+    // Delay before closing the control bar when it becomes empty while expanded.
+    private static final long CLOSE_IF_EMPTY_DELAY_MS = 100;
+
     private final OnGlobalFocusChangeListener mFocusChangeListener =
             (oldFocus, newFocus) -> {
                 // Collapse the control bar when it is expanded and loses focus.
@@ -111,7 +114,6 @@ public class ControlBar extends RelativeLayout implements ExpandableControlBar {
                 }
                 mHasFocus = hasFocus;
             };
-
 
     public ControlBar(Context context) {
         super(context);
@@ -344,14 +346,22 @@ public class ControlBar extends RelativeLayout implements ExpandableControlBar {
         // mRowsContainer's children are in reverse order (last row is at index 0)
         // When changing source (b/381304903), when the number of extra rows is less than before,
         // all rows except the main row should be hidden. When the number of rows is greater than
-        // before, only the main row should be set visible
+        // before, the main row should be set visible, and the extra rows should be set to visible
+        // if mIsExpanded is true.
         if (numExtraRowsInUseBefore > mNumExtraRowsInUse) {
-            for (int i = 0; i < mRowsContainer.getChildCount() - 1; i++) {
+            for (int i = mNumExtraRowsInUse; i < mRowsContainer.getChildCount() - 1; i++) {
                 mRowsContainer.getChildAt(i).setVisibility(View.GONE);
             }
         } else if (numExtraRowsInUseBefore < mNumExtraRowsInUse) {
             mRowsContainer.getChildAt(mRowsContainer.getChildCount() - 1)
                     .setVisibility(View.VISIBLE);
+            for (int i = numExtraRowsInUseBefore; i < mNumExtraRowsInUse; i++) {
+                mRowsContainer.getChildAt(i).setVisibility(mIsExpanded ? View.VISIBLE : View.GONE);
+            }
+        }
+
+        if (mIsExpanded && mNumExtraRowsInUse == 0) {
+            close();
         }
     }
 

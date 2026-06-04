@@ -61,6 +61,7 @@ public class MediaLinkHandler {
         if (TextUtils.isEmpty(mLinkedMediaId) || (mControllerDelegate == null)
                 || (mMediaItemsRepository == null)) {
             mDisplayView.setOnClickListener(null);
+            mDisplayView.setClickable(false); // setOnClickListener makes the view clickable...
         } else {
             mDisplayView.setOnClickListener(view -> mMediaItemsRepository.getItem(mLinkedMediaId,
                     new MediaBrowserCompat.ItemCallback() {
