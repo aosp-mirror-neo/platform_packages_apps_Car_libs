@@ -26,9 +26,6 @@ import androidx.core.graphics.drawable.IconCompat;
 
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackStateWrapper;
 
-import java.util.Objects;
-
-
 /**
  * Abstract representation of a custom playback action. A custom playback action represents a
  * visual element that can be used to trigger playback actions not included in the standard
@@ -52,10 +49,14 @@ public class CustomPlaybackAction {
     /**
      * Creates a custom action
      */
+    @Nullable
     public static CustomPlaybackAction create(@NonNull Context context, @NonNull String action,
             @Nullable Bundle extras, @NonNull IconCompat iconCompat) {
-        return new CustomPlaybackAction(Objects.requireNonNull(iconCompat.loadDrawable(context)),
-                action, extras, iconCompat);
+        Drawable drawable = iconCompat.loadDrawable(context);
+        if (drawable == null) {
+            return null;
+        }
+        return new CustomPlaybackAction(drawable, action, extras, iconCompat);
     }
 
     private CustomPlaybackAction(
