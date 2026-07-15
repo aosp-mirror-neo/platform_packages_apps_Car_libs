@@ -40,6 +40,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.car.media.common.CustomPlaybackAction;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaBrowserConnector.ConnectionStatus;
@@ -296,6 +297,17 @@ public class PlaybackViewModelTest {
         mBrowsingStateLD.setValue(new BrowsingState(
                 mContext, mMediaSource2, null, ConnectionStatus.NONEXISTENT));
         deliverValuesToCallbacks(newCallbackCaptor, newMetadata, newPlaybackState);
+    }
+
+    @Test
+    public void testRawCustomPlaybackAction_fetchDrawable_invalidResource_returnsNull() {
+        int nonDrawableResourceId = android.R.string.ok;
+        PlaybackViewModel.RawCustomPlaybackAction rawAction =
+                new PlaybackViewModel.RawCustomPlaybackAction(
+                        nonDrawableResourceId, null, "action", null);
+
+        CustomPlaybackAction action = rawAction.fetchDrawable(mContext);
+        assertThat(action).isNull();
     }
 
     private void deliverValuesToCallbacks(
