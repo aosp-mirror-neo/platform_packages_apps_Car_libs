@@ -31,59 +31,146 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:padding="16dp">
 
             <TextView
-                android:id="@+id/primary_label"
-                android:textSize="24sp"
-                android:layout_marginBottom="50dp"
+                android:id="@+id/seed_color_label"
+                android:textAppearance="?attr/oemTextAppearanceHeadlineSmall"
+                android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Seed color"/>
+                android:text="Seed Color"/>
 
             <SeekBar
                 android:id="@+id/color_seekbar"
-                android:layout_width="320dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/primary_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/seed_color_label"
                 android:progressDrawable="@drawable/hue_gradient"
                 android:thumbTint="?android:attr/textColorPrimary"
                 android:splitTrack="false"
-                android:max="320"
+                android:max="360"
                 android:progress="0" />
+
+            <TextView
+                android:id="@+id/hex_code_label"
+                android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@id/color_seekbar"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hex Code"/>
+
+            <LinearLayout
+                android:id="@+id/hex_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/hex_code_label"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <View
+                    android:id="@+id/color_preview"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/round_bg"/>
+
+                <EditText
+                    android:id="@+id/hex_input"
+                    android:layout_width="0dp"
+                    android:layout_height="76dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="monospace"
+                    android:text="#B5CFFF"
+                    android:textAllCaps="true"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:gravity="center_vertical"
+                    android:inputType="textCapCharacters"/>
+            </LinearLayout>
+
+            <GridLayout
+                android:id="@+id/scheme_grid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:columnCount="2"
+                app:layout_constraintTop_toBottomOf="@id/hex_container"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <RadioButton
+                    android:id="@+id/scheme_tonal_spot"
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:minHeight="76dp"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:text="Tonal Spot"/>
+                <RadioButton
+                    android:id="@+id/scheme_vibrant"
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:minHeight="76dp"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:text="Vibrant"
+                    android:checked="true"/>
+                <RadioButton
+                    android:id="@+id/scheme_expressive"
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:minHeight="76dp"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:text="Expressive"/>
+                <RadioButton
+                    android:id="@+id/scheme_neutral"
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:minHeight="76dp"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:text="Neutral"/>
+                <RadioButton
+                    android:id="@+id/scheme_content"
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:minHeight="76dp"
+                    android:textAppearance="?attr/oemTextAppearanceBodyLarge"
+                    android:text="Content"/>
+            </GridLayout>
 
             <Switch
                 android:id="@+id/light_switch"
-                app:layout_constraintTop_toBottomOf="@id/color_seekbar"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@id/scheme_grid"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Light Mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="Dark Mode"
+                android:textAppearance="?attr/oemTextAppearanceTitleLarge"
+                android:minHeight="76dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
 
             <Switch
                 android:id="@+id/corner_switch"
+                android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@id/light_switch"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Squared Corners"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <View
-                android:id="@+id/color_preview"
-                app:layout_constraintTop_toTopOf="@id/primary_label"
-                app:layout_constraintBottom_toBottomOf="@id/light_switch"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:background="@drawable/round_bg"/>
+                android:text="Squared Corners"
+                android:textAppearance="?attr/oemTextAppearanceTitleLarge"
+                android:minHeight="76dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
     </ScrollView>
 
     <androidx.constraintlayout.widget.Guideline

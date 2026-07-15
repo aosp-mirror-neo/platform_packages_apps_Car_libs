@@ -65,6 +65,8 @@ cp $GRADLE_OUTPUT_DIR/car-media-app/outputs/apk/platformAosp/release/car-media-a
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/prod/release/car-messenger-app-prod-release.apk $1/CarMessengerApp.apk
 check_status $?
+cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/platformAosp/release/car-messenger-app-platformAosp-release.apk $1/CarMessengerApp_aosp_cert.apk
+check_status $?
 cp $GRADLE_OUTPUT_DIR/PaintBooth/outputs/apk/unbundled/release/PaintBooth-unbundled-release.apk $1/PaintBooth.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/oem-token-shared-lib/outputs/apk/unbundled/release/oem-token-shared-lib-unbundled-release.apk $1/oem-token-shared-lib.apk
@@ -81,7 +83,7 @@ cp $GRADLE_OUTPUT_DIR/car-radio-app/outputs/apk/unbundled/release/car-radio-app-
 check_status $?
 cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformAosp/release/car-bugreport-app-platformAosp-release.apk $1/CarBugReportApp_aosp_cert.apk
 check_status $?
-cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/default/release/driver-ui-default-release-unsigned.apk $1/DriverUI.apk
+cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/platformAosp/debug/driver-ui-platformAosp-debug.apk $1/DriverUI.apk
 check_status $?
 cp $GRADLE_OUTPUT_DIR/driver-ui/outputs/apk/platformAosp/release/driver-ui-platformAosp-release.apk $1/driver-ui-platform-release.apk
 check_status $?
@@ -106,6 +108,8 @@ if [[ -n "${COPY_INTERNAL_ARTIFACTS+x}" ]]; then
   cp $GRADLE_OUTPUT_DIR/car-bugreport-app/outputs/apk/platformGoogle/release/car-bugreport-app-platformGoogle-release.apk $1/CarBugReportApp.apk
   check_status $?
   cp $GRADLE_OUTPUT_DIR/car-sensitiveapplock-app/outputs/apk/platformGoogle/release/car-sensitiveapplock-app-platformGoogle-release.apk $1/SensitiveAppLock.apk
+  check_status $?
+  cp $GRADLE_OUTPUT_DIR/car-messenger-app/outputs/apk/platformGoogle/release/car-messenger-app-platformGoogle-release.apk $1/CarMessengerApp_google_cert.apk
   check_status $?
 fi
 
@@ -280,3 +284,8 @@ fi
 
 $JAVA_HOME/bin/jar cvfM $1/jacoco-report-classes-all.jar -C $GRADLE_OUTPUT_DIR/jacoco .
 check_status $?
+
+# Copy attestation manifest for DriverUI.apk
+cp "$SCRIPTS_DIR/attestation_manifest.json" "$1/attestation_manifest.json"
+check_status $?
+

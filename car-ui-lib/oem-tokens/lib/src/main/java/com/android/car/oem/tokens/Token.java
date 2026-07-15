@@ -40,6 +40,7 @@ import androidx.annotation.VisibleForTesting;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * Public interface for general CarUi static functions.
@@ -254,7 +255,12 @@ public class Token {
      * Return a mapping of current values for OEM Design tokens.
      */
     public static String dump(@NonNull Context context) {
-        return createTokenMap(context).toString();
+        TreeMap<String, String> map = new TreeMap<>(createTokenMap(context));
+        StringBuilder sb = new StringBuilder();
+        for (java.util.Map.Entry<String, String> entry : map.entrySet()) {
+            sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+        }
+        return sb.toString();
     }
 
     /**

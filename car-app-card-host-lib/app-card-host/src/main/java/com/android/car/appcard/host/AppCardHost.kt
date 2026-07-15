@@ -25,7 +25,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ProviderInfo
-import android.os.Build
 import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.UserHandle
@@ -40,12 +39,14 @@ import com.android.car.appcard.host.AppCardTimer.UpdateReadyListener
 import com.android.car.appcard.internal.AppCardTransport
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.protobuf.InvalidProtocolBufferException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.function.Consumer
 
 class AppCardHost
@@ -56,6 +57,8 @@ internal constructor(
     private val responseExecutor: Executor,
     private val timerProvider: AppCardTimerProvider,
     private val userProvider: UserProvider,
+    private val executorProvider: ExecutorProvider,
+    ipcThreadPoolSize: Int,
 ) : UpdateReadyListener, AppCardObserverCallback {
 
     constructor(
@@ -63,6 +66,7 @@ internal constructor(
         updateRate: Int,
         fastUpdateRate: Int,
         responseExecutor: Executor,
+        ipcThreadPoolSize: Int = DEFAULT_IPC_THREAD_COUNT,
     ) : this(
         c,
         updateRate,
@@ -73,16 +77,27 @@ internal constructor(
                 listener: UpdateReadyListener,
                 updateRateMs: Int,
                 fastUpdateRateMs: Int,
-            ) = AppCardTimer(listener, updateRateMs, fastUpdateRateMs)
+                scheduledExecutorService: ScheduledExecutorService,
+            ) = AppCardTimer(listener, updateRateMs, fastUpdateRateMs, scheduledExecutorService)
         },
         object : UserProvider {
             override fun getCurrentUser() = ActivityManager.getCurrentUser()
         },
+        object : ExecutorProvider {
+            override fun getExecutorService(ipcThreadPoolSize: Int): ListeningExecutorService =
+                MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(ipcThreadPoolSize))
+
+            override fun getScheduledExecutorService(): ScheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor()
+        },
+        ipcThreadPoolSize,
     )
 
     private val listeners: MutableSet<AppCardListener>
     private val idBrokerMap: ConcurrentMap<ApplicationIdentifier, BrokerWrapper>
-    private val executorService = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool())
+    private val authorityToIdentifierMap: ConcurrentMap<String, ApplicationIdentifier>
+    private val executorService: ListeningExecutorService
+    private val scheduledExecutorService: ScheduledExecutorService
     private val packageManager: PackageManager
     private val contentResolver: ContentResolver
     private val brokerFactory: BrokerFactory
@@ -100,6 +115,10 @@ internal constructor(
 
         listeners = HashSet()
         idBrokerMap = ConcurrentHashMap()
+        authorityToIdentifierMap = ConcurrentHashMap()
+
+        executorService = executorProvider.getExecutorService(ipcThreadPoolSize)
+        scheduledExecutorService = executorProvider.getScheduledExecutorService()
 
         val expectedBrokerPermission =
             context.resources.getString(com.android.car.appcard.R.string.host_permission)
@@ -113,6 +132,7 @@ internal constructor(
             )
         brokerFactory.connectToAllCompatibleApplications().forEach {
             idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+            authorityToIdentifierMap[it.key.authority] = it.key
         }
 
         setupAppChangeReceiver()
@@ -161,6 +181,7 @@ internal constructor(
         synchronized(idBrokerMap) {
             brokerFactory.refreshCompatibleApplication(idBrokerMap.keys).forEach {
                 idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+                authorityToIdentifierMap[it.key.authority] = it.key
             }
         }
     }
@@ -180,6 +201,7 @@ internal constructor(
             )
 
             idBrokerMap.clear()
+            authorityToIdentifierMap.clear()
         }
     }
 
@@ -192,6 +214,8 @@ internal constructor(
             synchronized(listeners) { listeners.clear() }
 
             closeAllApplicationConnections()
+            executorService.shutdownNow()
+            scheduledExecutorService.shutdownNow()
         }
     }
 
@@ -326,6 +350,18 @@ internal constructor(
 
             brokerWrapper.activeAppCardMap.clear()
             idBrokerMap.remove(identifier)
+            authorityToIdentifierMap.remove(identifier.authority)
+
+            synchronized(listeners) {
+                listeners.forEach(
+                    Consumer { appCardListener: AppCardListener ->
+                        appCardListener.onProviderRemoved(
+                            identifier.packageName,
+                            identifier.authority,
+                        )
+                    }
+                )
+            }
         }
     }
 
@@ -680,93 +716,10 @@ internal constructor(
                     listener = this,
                     updateRateMs = updateRateMs,
                     fastUpdateRateMs = fastUpdateRateMs,
+                    scheduledExecutorService = scheduledExecutorService,
                 )
             timer.updateAppCard(AppCardContainer(identifier, appCard))
             activeAppCardMap.put(appCard.id, ActiveAppCard(appCard, timer))
-        }
-    }
-
-    private fun retrieveAppCardComponentUpdate(
-        brokerWrapper: BrokerWrapper,
-        activeAppCard: ActiveAppCard,
-        identifier: ApplicationIdentifier,
-        appCardId: String,
-        componentId: String,
-    ) {
-        synchronized(idBrokerMap) {
-            val broker = brokerWrapper.broker
-            val timer = activeAppCard.appCardTimer
-            val listenableFuture =
-                executorService.submit<AppCardComponentContainer> {
-                    val bundle = Bundle()
-                    bundle.apply {
-                        putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_ID, appCardId)
-                        putString(
-                            AppCardContentProvider.BUNDLE_KEY_APP_CARD_COMPONENT_ID,
-                            componentId,
-                        )
-                    }
-
-                    val appCardTransport =
-                        try {
-                            broker.getAppCardTransport(
-                                identifier,
-                                errorId = "$appCardId#$componentId",
-                                bundle,
-                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
-                            )
-                        } catch (exception: Exception) {
-                            if (exception is ContentProviderBroker.ContentProviderBrokerException) {
-                                if (exception.cause is DeadObjectException) {
-                                    handleInvalidBroker(identifier)
-                                }
-                            }
-
-                            throw exception
-                        }
-
-                    val component =
-                        appCardTransport.component
-                            ?: throw AppCardHostException(
-                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
-                                id = "$appCardId#$componentId",
-                                IllegalStateException("App card component missing from transport"),
-                            )
-                    timer.componentUpdate(component.componentId)
-
-                    AppCardComponentContainer(identifier, appCardId, component)
-                }
-
-            Futures.addCallback(
-                listenableFuture,
-                object : FutureCallback<AppCardComponentContainer> {
-                    override fun onSuccess(appCardComponentContainer: AppCardComponentContainer) {
-                        synchronized(listeners) {
-                            listeners.forEach(
-                                Consumer { appCardListener: AppCardListener ->
-                                    appCardListener.onComponentReceived(appCardComponentContainer)
-                                }
-                            )
-                        }
-                    }
-
-                    override fun onFailure(throwable: Throwable) {
-                        Log.e(TAG, throwable.message, throwable)
-
-                        synchronized(listeners) {
-                            listeners.forEach(
-                                Consumer { appCardListener: AppCardListener ->
-                                    appCardListener.onPackageCommunicationError(
-                                        identifier,
-                                        throwable,
-                                    )
-                                }
-                            )
-                        }
-                    }
-                },
-                responseExecutor,
-            )
         }
     }
 
@@ -795,20 +748,20 @@ internal constructor(
     @VisibleForTesting
     internal fun handlePackageRemovedOrDisabled(packageName: String, authority: String?) {
         synchronized(idBrokerMap) {
-            var isRemoved = false
-            idBrokerMap.entries.removeIf { (key, value) ->
-                authority?.let { if (!key.containsAuthority(it)) return@removeIf false }
+            val wasRemoved =
+                idBrokerMap.entries.removeIf { (key, value) ->
+                    authority?.let { if (!key.containsAuthority(it)) return@removeIf false }
 
-                if (!key.containsPackage(packageName)) return@removeIf false
+                    if (!key.containsPackage(packageName)) return@removeIf false
 
-                value.broker.close()
-                value.activeAppCardMap.clear()
-                isRemoved = true
+                    value.broker.close()
+                    value.activeAppCardMap.clear()
+                    authorityToIdentifierMap.remove(key.authority)
 
-                true
-            }
+                    true
+                }
 
-            if (!isRemoved) return
+            if (!wasRemoved) return
 
             synchronized(listeners) {
                 listeners.forEach(
@@ -909,11 +862,26 @@ internal constructor(
     @VisibleForTesting
     internal fun handleUserChange() {
         synchronized(idBrokerMap) {
+            val identifiers = idBrokerMap.keys.toList()
             closeAllApplicationConnections()
             currentUser = userProvider.getCurrentUser()
-            idBrokerMap.clear()
+
+            synchronized(listeners) {
+                identifiers.forEach { identifier ->
+                    listeners.forEach(
+                        Consumer { appCardListener: AppCardListener ->
+                            appCardListener.onProviderRemoved(
+                                identifier.packageName,
+                                identifier.authority,
+                            )
+                        }
+                    )
+                }
+            }
+
             brokerFactory.connectToAllCompatibleApplications().forEach {
                 idBrokerMap[it.key] = BrokerWrapper(it.value, it.key)
+                authorityToIdentifierMap[it.key.authority] = it.key
             }
         }
     }
@@ -996,34 +964,118 @@ internal constructor(
         id: String,
         componentId: String,
     ) {
-        synchronized(idBrokerMap) {
-            val identifier =
-                idBrokerMap.keys
-                    .stream()
-                    .filter { i: ApplicationIdentifier -> i.containsAuthority(authority) }
-                    .findFirst()
+        executorService.execute {
+            val updateInfo =
+                synchronized(idBrokerMap) {
+                    val identifier = authorityToIdentifierMap[authority] ?: return@synchronized null
 
-            val isEmpty =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    identifier.isEmpty
-                } else {
-                    !identifier.isPresent
+                    val brokerWrapper = idBrokerMap[identifier] ?: return@synchronized null
+                    val activeAppCard =
+                        brokerWrapper.activeAppCardMap[id] ?: return@synchronized null
+
+                    if (!activeAppCard.appCardTimer.isComponentReadyForUpdate(componentId)) {
+                        return@synchronized null
+                    }
+                    Triple(identifier, brokerWrapper, activeAppCard)
                 }
-            if (isEmpty) return
 
-            val brokerWrapper = idBrokerMap[identifier.get()] ?: return
-            val cacheTimer = brokerWrapper.activeAppCardMap[id] ?: return
+            updateInfo?.let { (identifier, brokerWrapper, activeAppCard) ->
+                val broker = brokerWrapper.broker
+                val timer = activeAppCard.appCardTimer
 
-            if (!cacheTimer.appCardTimer.isComponentReadyForUpdate(componentId)) return
+                val bundle = Bundle()
+                bundle.apply {
+                    putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_ID, id)
+                    putString(AppCardContentProvider.BUNDLE_KEY_APP_CARD_COMPONENT_ID, componentId)
+                }
 
-            retrieveAppCardComponentUpdate(
-                brokerWrapper,
-                cacheTimer,
-                identifier.get(),
-                id,
-                componentId,
-            )
+                try {
+                    val appCardTransport =
+                        broker.getAppCardTransport(
+                            identifier,
+                            errorId = "$id#$componentId",
+                            bundle,
+                            AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
+                        )
+
+                    val component =
+                        appCardTransport.component
+                            ?: throw AppCardHostException(
+                                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE,
+                                id = "$id#$componentId",
+                                IllegalStateException("App card component missing from transport"),
+                            )
+
+                    // Re-verify that the app card and its broker are still active after the
+                    // long-running IPC call, ensuring that we use the most current state
+                    // and avoid race conditions.
+                    synchronized(idBrokerMap) {
+                        val currentIdentifier =
+                            authorityToIdentifierMap[authority] ?: return@synchronized
+                        val currentBrokerWrapper =
+                            idBrokerMap[currentIdentifier] ?: return@synchronized
+                        val currentActiveCard =
+                            currentBrokerWrapper.activeAppCardMap[id] ?: return@synchronized
+
+                        currentActiveCard.appCardTimer.componentUpdate(component.componentId)
+
+                        val appCardComponentContainer =
+                            AppCardComponentContainer(currentIdentifier, id, component)
+
+                        responseExecutor.execute {
+                            synchronized(listeners) {
+                                listeners.forEach(
+                                    Consumer { appCardListener: AppCardListener ->
+                                        appCardListener.onComponentReceived(
+                                            appCardComponentContainer
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } catch (exception: Exception) {
+                    val identifierToReport =
+                        synchronized(idBrokerMap) {
+                            val freshIdentifier = authorityToIdentifierMap[authority]
+                            val identifierForError = freshIdentifier ?: identifier
+
+                            if (
+                                freshIdentifier != null &&
+                                    exception is
+                                        ContentProviderBroker.ContentProviderBrokerException &&
+                                    exception.cause is DeadObjectException &&
+                                    idBrokerMap[freshIdentifier] === brokerWrapper
+                            ) {
+                                handleInvalidBroker(freshIdentifier)
+                            }
+                            identifierForError
+                        }
+
+                    Log.e(TAG, exception.message, exception)
+
+                    responseExecutor.execute {
+                        synchronized(listeners) {
+                            listeners.forEach(
+                                Consumer { appCardListener: AppCardListener ->
+                                    appCardListener.onPackageCommunicationError(
+                                        identifierToReport,
+                                        exception,
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    /** Internal interface to abstract out executors from tests */
+    internal interface ExecutorProvider {
+        fun getExecutorService(ipcThreadPoolSize: Int): ListeningExecutorService
+
+        fun getScheduledExecutorService(): ScheduledExecutorService
     }
 
     /** Internal interface to abstract out timers from tests */
@@ -1032,6 +1084,7 @@ internal constructor(
             listener: UpdateReadyListener,
             updateRateMs: Int,
             fastUpdateRateMs: Int,
+            scheduledExecutorService: ScheduledExecutorService,
         ): AppCardTimer
     }
 
@@ -1051,6 +1104,7 @@ internal constructor(
     companion object {
         private const val TAG = "AppCardHost"
         private const val DATA_SCHEME_PACKAGE = "package"
+        private const val DEFAULT_IPC_THREAD_COUNT = 8
 
         @Throws(AppCardHostException::class)
         private fun getHostAppCardsFromTransport(

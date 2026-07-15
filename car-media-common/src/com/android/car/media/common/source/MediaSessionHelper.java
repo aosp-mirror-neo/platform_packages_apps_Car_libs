@@ -423,7 +423,7 @@ public class MediaSessionHelper extends MediaController.Callback {
                 return;
             }
             mActiveOrPausedMediaSources
-                .setValue(mInputFactory.getMediaSources(activeMediaControllers));
+                    .setValue(mInputFactory.getMediaSources(activeMediaControllers));
         }
     }
 
@@ -435,32 +435,71 @@ public class MediaSessionHelper extends MediaController.Callback {
 
         parseMediaControllers(filteredControllers,
                 activeMediaControllers, activeOrPausedMediaControllers);
-        MediaSource savedMediaSource = null;
 
         // Setup initial activeMediaController
         if (activeMediaControllers.isEmpty()) {
             // Get the last saved media source
-            String savedMediaSourceName = getLastActiveMediaSource();
-            if (TextUtils.isEmpty(savedMediaSourceName)) {
-                // Don't change default values
-                return;
+            String savedMediaSourceName = mSharedPrefs.getString(LAST_ACTIVE_MEDIA_SOURCE, "");
+            if (!TextUtils.isEmpty(savedMediaSourceName)) {
+                setSavedMediaSource(savedMediaSourceName, activeOrPausedMediaControllers);
+            } else {
+                getCarMediaServiceSessionAsync(activeOrPausedMediaControllers);
             }
-            savedMediaSource = createSavedMediaSource(savedMediaSourceName,
-                    activeOrPausedMediaControllers);
-            savedMediaSource = maybeReplacePrimaryMediaSource(savedMediaSource);
-            mPrimaryMediaSource.setValue(savedMediaSource);
         } else {
             updatePrimaryMediaSource(activeMediaControllers);
         }
 
         // Setup initial activeOrPausedMediaSources
+        if (!activeOrPausedMediaControllers.isEmpty()) {
+            updateActiveOrPausedMediaSources(activeOrPausedMediaControllers);
+        }
+    }
+
+    private void setSavedMediaSource(String savedMediaSourceName,
+            List<MediaController> activeOrPausedMediaControllers) {
+        MediaSource savedMediaSource = createSavedMediaSource(savedMediaSourceName,
+                activeOrPausedMediaControllers);
+        savedMediaSource = maybeReplacePrimaryMediaSource(savedMediaSource);
+        mPrimaryMediaSource.setValue(savedMediaSource);
+
         if (activeOrPausedMediaControllers.isEmpty()) {
             if (savedMediaSource != null) {
                 mActiveOrPausedMediaSources.setValue(Collections.singletonList(savedMediaSource));
             }
-        } else {
-            updateActiveOrPausedMediaSources(activeOrPausedMediaControllers);
         }
+    }
+
+    private void getCarMediaServiceSessionAsync(
+            List<MediaController> activeOrPausedMediaControllers) {
+        Context context = mContext.get();
+        if (context == null) {
+            return;
+        }
+
+        Car.createCar(context, null, Car.CAR_WAIT_TIMEOUT_DO_NOT_WAIT, (car, ready) -> {
+            if (!ready) {
+                return;
+            }
+            try {
+                CarMediaManager carMediaManager =
+                        (CarMediaManager) car.getCarManager(Car.CAR_MEDIA_SERVICE);
+                if (carMediaManager != null) {
+                    ComponentName componentName = carMediaManager.getMediaSource(
+                            MEDIA_SOURCE_MODE_PLAYBACK);
+                    if (componentName != null) {
+                        setSavedMediaSource(componentName.flattenToString(),
+                                activeOrPausedMediaControllers);
+                    }
+                }
+            } catch (SecurityException e) {
+                Log.e(TAG, "Unable to read CarMediaManager media source. Requires "
+                        + "android.permission.MEDIA_CONTENT_CONTROL " + e);
+            } finally {
+                if (car != null) {
+                    car.disconnect();
+                }
+            }
+        });
     }
 
     private MediaSource createSavedMediaSource(String savedMediaSourceName,
@@ -538,31 +577,7 @@ public class MediaSessionHelper extends MediaController.Callback {
         }
     }
 
-    private String getLastActiveMediaSource() {
-        String mediaSource = mSharedPrefs.getString(LAST_ACTIVE_MEDIA_SOURCE, "");
 
-        return TextUtils.isEmpty(mediaSource)
-                ? getCarMediaServiceSession() : mediaSource;
-    }
-
-    private String getCarMediaServiceSession() {
-        Car car = Car.createCar(mContext.get());
-        ComponentName componentName = null;
-        if (car != null) {
-            CarMediaManager carMediaManager =
-                    (CarMediaManager) car.getCarManager(Car.CAR_MEDIA_SERVICE);
-            try {
-                componentName = carMediaManager.getMediaSource(MEDIA_SOURCE_MODE_PLAYBACK);
-            } catch (SecurityException e) {
-                Log.e(TAG, "Unable to read CarMediaManager media source. Requires "
-                        + "android.permission.MEDIA_CONTENT_CONTROL " + e);
-            }
-            car.disconnect();
-        }
-
-        // ComponentName may be null b/355078140
-        return componentName == null ? "" : componentName.flattenToString();
-    }
 
     /* Copy of PlaybackState.isActive() which is only available for minsdk >=S  */
     private boolean isActive(int playbackState) {

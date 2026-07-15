@@ -292,40 +292,45 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
     private fun getMethod(uri: Uri) = uri.pathSegments[0]
 
     final override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
-        synchronized(lock) {
-            var id: String? = null
-            var componentId: String? = null
-            var interactionId: String? = null
-            var appCardContext: AppCardContext? = null
+        try {
+            synchronized(lock) {
+                var id: String? = null
+                var componentId: String? = null
+                var interactionId: String? = null
+                var appCardContext: AppCardContext? = null
 
-            extras?.let {
-                val defaultValue = null
-                id = it.getString(BUNDLE_KEY_APP_CARD_ID, defaultValue)
-                componentId = it.getString(BUNDLE_KEY_APP_CARD_COMPONENT_ID, defaultValue)
-                interactionId = it.getString(BUNDLE_KEY_APP_CARD_INTERACTION_ID, defaultValue)
-                val appCardContextBundle = it.getBundle(BUNDLE_KEY_APP_CARD_CONTEXT)
-                appCardContext = fromBundle(appCardContextBundle)
+                extras?.let {
+                    val defaultValue = null
+                    id = it.getString(BUNDLE_KEY_APP_CARD_ID, defaultValue)
+                    componentId = it.getString(BUNDLE_KEY_APP_CARD_COMPONENT_ID, defaultValue)
+                    interactionId = it.getString(BUNDLE_KEY_APP_CARD_INTERACTION_ID, defaultValue)
+                    val appCardContextBundle = it.getBundle(BUNDLE_KEY_APP_CARD_CONTEXT)
+                    appCardContext = fromBundle(appCardContextBundle)
+                }
+
+                var bundle: Bundle? = null
+                when (method) {
+                    AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE ->
+                        bundle = handleAppCardComponentUpdate(id, componentId)
+
+                    AppCardMessageConstants.MSG_APP_CARD_REMOVED -> removeAppCard(id)
+
+                    AppCardMessageConstants.MSG_APP_CARD_INTERACTION ->
+                        handleInteraction(id, componentId, interactionId)
+
+                    AppCardMessageConstants.MSG_APP_CARD_CONTEXT_UPDATE ->
+                        handleAppCardContextUpdate(id, appCardContext)
+
+                    AppCardMessageConstants.MSG_CLOSE_PROVIDER -> handleClose()
+
+                    else -> Log.e(TAG, "Unrecognized method: $method")
+                }
+
+                return bundle
             }
-
-            var bundle: Bundle? = null
-            when (method) {
-                AppCardMessageConstants.MSG_APP_CARD_COMPONENT_UPDATE ->
-                    bundle = handleAppCardComponentUpdate(id, componentId)
-
-                AppCardMessageConstants.MSG_APP_CARD_REMOVED -> removeAppCard(id)
-
-                AppCardMessageConstants.MSG_APP_CARD_INTERACTION ->
-                    handleInteraction(id, componentId, interactionId)
-
-                AppCardMessageConstants.MSG_APP_CARD_CONTEXT_UPDATE ->
-                    handleAppCardContextUpdate(id, appCardContext)
-
-                AppCardMessageConstants.MSG_CLOSE_PROVIDER -> handleClose()
-
-                else -> Log.e(TAG, "Unrecognized method: $method")
-            }
-
-            return bundle
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception occurred during call ($method)", e)
+            return null
         }
     }
 
@@ -470,17 +475,16 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
         }
 
         latestAppCard[appCard.id] = appCard
-        activeAppCardCountMap[id] =
-            (activeAppCardCountMap[id]?.let { it + 1 })
-                ?: run {
-                    if (dispatcher.getDesiredState() != Lifecycle.Event.ON_RESUME) {
-                        if (dispatcher.getDesiredState() != Lifecycle.Event.ON_START)
-                            dispatcher.queueOnStart()
-
-                        dispatcher.queueOnResume()
-                    }
-                    1 // run's return value
+        activeAppCardCountMap.compute(id) { _, count ->
+            val newCount = (count ?: 0) + 1
+            if (newCount == 1 && dispatcher.getDesiredState() != Lifecycle.Event.ON_RESUME) {
+                if (dispatcher.getDesiredState() != Lifecycle.Event.ON_START) {
+                    dispatcher.queueOnStart()
                 }
+                dispatcher.queueOnResume()
+            }
+            newCount
+        }
         appCardIdComponentMap[id] = getComponentMapFromAppCard(appCard)
 
         return appCard
@@ -493,29 +497,42 @@ abstract class AppCardContentProvider : ContentProvider(), LifecycleOwner {
                 return
             }
 
-        val defaultValue = 0
-        var count = activeAppCardCountMap.getOrDefault(id, defaultValue)
-
-        when (count) {
-            0 -> Log.e(TAG, "App card remove requested for an inactive app card")
-            1 -> {
-                activeAppCardCountMap.remove(id)
-                appCardIdComponentMap.remove(id)
-                latestAppCard.remove(id)
-                onAppCardRemoved(id)
-
-                if (
-                    activeAppCardCountMap.isEmpty() &&
-                        dispatcher.getDesiredState() != Lifecycle.Event.ON_STOP
-                ) {
-                    if (dispatcher.getDesiredState() != Lifecycle.Event.ON_PAUSE)
-                        dispatcher.queueOnPause()
-
-                    dispatcher.queueOnStop()
+        var removed = false
+        var wasInactive = false
+        activeAppCardCountMap.compute(id) { _, count ->
+            when (count) {
+                null,
+                0 -> {
+                    wasInactive = true
+                    null
                 }
+                1 -> {
+                    removed = true
+                    null
+                }
+                else -> count - 1
             }
+        }
 
-            else -> activeAppCardCountMap[id] = --count
+        if (wasInactive) {
+            Log.e(TAG, "App card remove requested for an inactive app card")
+            return
+        }
+
+        if (removed) {
+            appCardIdComponentMap.remove(id)
+            latestAppCard.remove(id)
+            onAppCardRemoved(id)
+
+            if (
+                activeAppCardCountMap.isEmpty() &&
+                    dispatcher.getDesiredState() != Lifecycle.Event.ON_STOP
+            ) {
+                if (dispatcher.getDesiredState() != Lifecycle.Event.ON_PAUSE) {
+                    dispatcher.queueOnPause()
+                }
+                dispatcher.queueOnStop()
+            }
         }
     }
 
